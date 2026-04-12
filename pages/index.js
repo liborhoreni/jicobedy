@@ -19,9 +19,15 @@ function normalize(name) {
   return stripNumber(name).toLowerCase().trim().replace(/\s+/g, ' ');
 }
 
+function getToday() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function getFavorites() {
   try {
-    return JSON.parse(localStorage.getItem('favorites') || '[]');
+    const raw = JSON.parse(localStorage.getItem('favorites') || '[]');
+    // Migrate old format (plain strings) to new format ({name, addedAt})
+    return raw.map(f => typeof f === 'string' ? { name: f, addedAt: '2000-01-01' } : f);
   } catch { return []; }
 }
 
@@ -31,7 +37,13 @@ function saveFavorites(favs) {
 
 function isFavorite(name, favs) {
   const n = normalize(name);
-  return favs.some(f => normalize(f) === n);
+  return favs.some(f => normalize(f.name) === n);
+}
+
+function isOldFavorite(name, favs) {
+  const n = normalize(name);
+  const today = getToday();
+  return favs.some(f => normalize(f.name) === n && f.addedAt !== today);
 }
 
 const DAYS = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'];
@@ -152,12 +164,12 @@ export default function Home() {
     const clean = stripNumber(name);
     setFavorites(prev => {
       const n = normalize(name);
-      const removing = prev.some(f => normalize(f) === n);
+      const removing = prev.some(f => normalize(f.name) === n);
       let next;
       if (removing) {
-        next = prev.filter(f => normalize(f) !== n);
+        next = prev.filter(f => normalize(f.name) !== n);
       } else {
-        next = [...prev, clean];
+        next = [...prev, { name: clean, addedAt: getToday() }];
       }
       saveFavorites(next);
 
@@ -172,14 +184,14 @@ export default function Home() {
     });
   }, []);
 
-  // Find today's favorites
+  // Find old favorites that are in today's menu
   const todayFavorites = [];
   if (data && data.restaurants && favorites.length > 0) {
     for (const r of data.restaurants) {
       if (!r.menu) continue;
       for (const section of ['meals', 'weekly']) {
         for (const item of (r.menu[section] || [])) {
-          if (isFavorite(item.name, favorites)) {
+          if (isOldFavorite(item.name, favorites)) {
             todayFavorites.push({ meal: item, restaurant: r.name });
           }
         }
