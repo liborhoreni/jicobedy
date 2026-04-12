@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "functions": {
+    "/api/scrape": {
+      "maxDuration": 60
+    },
+    "/api/scrape-qwerty": {
+      "maxDuration": 60
+    }
+  }
+}
