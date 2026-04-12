@@ -1,6 +1,19 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
+import confetti from "canvas-confetti";
 import styles from "@/styles/Home.module.css";
+
+const RESTAURANT_COLORS = {
+  '8518': '#e74c3c',
+  '4931': '#3498db',
+  'bistro22': '#2ecc71',
+  'qwerty': '#f39c12',
+  '3884': '#9b59b6',
+};
+
+function stripNumber(name) {
+  return name.replace(/^\d+\.\s*/, '');
+}
 
 const DAYS = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'];
 const MONTHS = ['ledna', 'února', 'března', 'dubna', 'května', 'června',
@@ -13,7 +26,11 @@ function MenuGroup({ label, items }) {
       <div className={styles.menuGroupLabel}>{label}</div>
       {items.map((item, i) => (
         <div key={i} className={styles.menuItem}>
-          <span className={styles.menuItemName}>{item.name}</span>
+          <span className={styles.menuItemName}>
+            {stripNumber(item.name)}
+            {item.veggie && <img className={styles.veggieBadge} src="/vegetarian.png" alt="V" title="Vegetariánské" />}
+            {item.spicy && <span className={styles.spicyBadge} title="Pikantní">🌶️</span>}
+          </span>
           <span className={styles.menuItemPrice}>{item.price}</span>
         </div>
       ))}
@@ -29,21 +46,17 @@ function RestaurantCard({ r }) {
   );
 
   return (
-    <div className={styles.restaurant}>
+    <div className={styles.restaurant} style={{ borderLeftColor: RESTAURANT_COLORS[r.id] || '#a8a29e' }}>
       <div className={styles.restaurantHeader}>
-        {r.logo && <img className={styles.restaurantLogo} src={r.logo} alt={r.name} />}
         <span className={styles.restaurantName}>{r.name}</span>
-        <a className={styles.restaurantLink} href={r.sourceUrl} target="_blank" rel="noopener noreferrer">
-          zdroj →
-        </a>
       </div>
 
       {!hasMenu ? (
         <div className={styles.closedMessage}>{r.note || 'Menu zatím není k dispozici'}</div>
       ) : (
         <div className={styles.menuSection}>
-          <MenuGroup label="Polévky" items={r.menu.soups} />
-          <MenuGroup label="Hlavní jídla" items={r.menu.meals} />
+          <MenuGroup label={r.menu.soups && r.menu.soups.length === 1 ? "Polévka" : "Polévky"} items={r.menu.soups} />
+          <MenuGroup label="Denní menu" items={r.menu.meals} />
           <MenuGroup label="Týdenní nabídka" items={r.menu.weekly} />
         </div>
       )}
@@ -51,10 +64,17 @@ function RestaurantCard({ r }) {
   );
 }
 
+const RANDOM_MESSAGES = [
+  'Dneska zkus tohle!',
+  'Na tohle máš chuť, věř mi.',
+  'Osud promluvil!',
+  'Výběr pro tebe:',
+  'Hvězdy praví...',
+];
+
 export default function Home() {
   const [data, setData] = useState(null);
-  const [spinning, setSpinning] = useState(false);
-
+  const [randomPick, setRandomPick] = useState(null);
   const now = new Date();
   const dateStr = `${DAYS[now.getDay()]} ${now.getDate()}. ${MONTHS[now.getMonth()]}`;
 
@@ -62,43 +82,67 @@ export default function Home() {
     fetch('/api/menus').then(r => r.json()).then(setData).catch(console.error);
   }, []);
 
-  async function handleRefresh() {
-    setSpinning(true);
-    try {
-      await fetch('/api/scrape', { method: 'POST' });
-      const res = await fetch('/api/menus');
-      setData(await res.json());
-    } catch (err) {
-      console.error(err);
+  function pickRandom() {
+    if (!data || !data.restaurants) return;
+    const allMeals = [];
+    for (const r of data.restaurants) {
+      if (!r.menu) continue;
+      for (const item of (r.menu.meals || [])) {
+        allMeals.push({ meal: item, restaurant: r.name });
+      }
+      if (r.id === 'qwerty') {
+        for (const item of (r.menu.weekly || [])) {
+          allMeals.push({ meal: item, restaurant: r.name });
+        }
+      }
     }
-    setSpinning(false);
+    if (allMeals.length === 0) return;
+    const pick = allMeals[Math.floor(Math.random() * allMeals.length)];
+    const msg = RANDOM_MESSAGES[Math.floor(Math.random() * RANDOM_MESSAGES.length)];
+    setRandomPick({ ...pick, message: msg });
+    confetti({
+      particleCount: 35,
+      spread: 55,
+      startVelocity: 35,
+      ticks: 90,
+      origin: { x: 0.5, y: 0.6 },
+      colors: ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#d97706'],
+    });
   }
 
   return (
     <>
       <Head>
-        <title>JIC Obědy</title>
+        <title>Obědy v okolí JIC</title>
         <meta name="description" content="Denní menu restaurací v okolí JIC Brno" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </Head>
 
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <h1 className={styles.title}>JIC Obědy</h1>
-          <div className={styles.headerRight}>
-            <span className={styles.date}>{dateStr}</span>
-            <button
-              className={`${styles.refreshBtn} ${spinning ? styles.spinning : ''}`}
-              onClick={handleRefresh}
-              title="Obnovit data"
-            >
-              ↻
-            </button>
+          <div className={styles.headerTop}>
+            <h1 className={styles.title}>Obědy v okolí JIC</h1>
+            {data && data.restaurants && data.restaurants.length > 0 && (
+              <button className={styles.randomBtn} onClick={pickRandom}>
+                🎲 Náhodné jídlo
+              </button>
+            )}
           </div>
+          <span className={styles.date}>{dateStr}</span>
         </div>
       </header>
 
+      {randomPick && (
+        <div className={styles.randomResult}>
+          <div className={styles.randomMessage}>{randomPick.message}</div>
+          <div className={styles.randomMeal}>{stripNumber(randomPick.meal.name)}</div>
+          <div className={styles.randomRestaurant}>{randomPick.restaurant} {randomPick.meal.price && `· ${randomPick.meal.price}`}</div>
+        </div>
+      )}
+
       <main className={styles.main}>
+
         {!data || !data.restaurants || data.restaurants.length === 0 ? (
           <div className={styles.loading}>Načítám menu...</div>
         ) : (

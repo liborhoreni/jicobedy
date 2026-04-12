@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Small leaf (left, behind) -->
+  <path d="M200 410 C200 410 80 320 80 200 C80 80 180 40 240 120 L200 410Z" fill="#4CAF50"/>
+  <!-- Large leaf (right, front) -->
+  <path d="M250 450 C250 450 380 340 420 180 C440 100 400 20 320 10 C240 0 200 60 200 140 C200 280 250 450 250 450Z" fill="#4CAF50"/>
+  <!-- Vein on large leaf -->
+  <path d="M260 420 C270 320 300 200 340 80" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.3"/>
+  <!-- Vein on small leaf -->
+  <path d="M205 380 C190 300 150 220 120 140" stroke="white" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.3"/>
+</svg>

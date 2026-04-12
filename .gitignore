@@ -1,1 +1,7 @@
-node_modules\n.next\ndata/
+node_modules
+.next
+data/
+.vercel
+.DS_Store
+.env
+.env.local

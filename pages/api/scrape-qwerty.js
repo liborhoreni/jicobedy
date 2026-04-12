@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { getRedis } from '../../lib/kv';
 
 export const config = {
   maxDuration: 60,
@@ -17,6 +17,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing ocrText' });
     }
 
+    const kv = getRedis();
     await kv.set('qwerty-ocr', ocrText);
     res.json({ ok: true });
   } catch (err) {

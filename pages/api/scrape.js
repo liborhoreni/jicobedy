@@ -1,20 +1,14 @@
-import { kv } from '@vercel/kv';
+import { getRedis } from '../../lib/kv';
 import { scrapeAll, parseQwertyOcr } from '../../lib/scraper';
+import { classifyVeggie } from '../../lib/classify-veggie';
 
 export const config = {
   maxDuration: 60,
 };
 
 export default async function handler(req, res) {
-  // Autorizace pro cron volání
-  if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}` && req.method !== 'POST') {
-    // Povolit POST pro manuální refresh z frontendu
-    if (req.method !== 'POST') {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-  }
-
   try {
+    const kv = getRedis();
     const data = await scrapeAll();
 
     // QWERTY OCR: zkus načíst uložený OCR text
@@ -30,6 +24,13 @@ export default async function handler(req, res) {
           closed: !hasMenu,
         };
       }
+    }
+
+    // Classify vegetarian items via AI
+    try {
+      data.restaurants = await classifyVeggie(data.restaurants);
+    } catch (e) {
+      console.error('Veggie classification failed:', e.message);
     }
 
     await kv.set('menus', data);

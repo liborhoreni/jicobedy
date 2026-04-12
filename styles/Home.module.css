@@ -1,3 +1,4 @@
+/* Header */
 .header {
   background: #ffffff;
   border-bottom: 1px solid #e7e5e4;
@@ -7,109 +8,123 @@
 }
 
 .headerInner {
-  max-width: 900px;
+  max-width: 1060px;
   margin: 0 auto;
-  padding: 16px 24px;
+  padding: 28px 32px 24px;
+  text-align: center;
+}
+
+.headerTop {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .title {
-  font-size: 22px;
+  font-size: 34px;
   font-weight: 700;
   color: #1c1917;
-}
-
-.headerRight {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  letter-spacing: -0.5px;
 }
 
 .date {
-  font-size: 14px;
-  color: #78716c;
+  font-size: 22px;
+  color: #57534e;
   font-weight: 500;
+  margin-top: 4px;
 }
 
-.refreshBtn {
-  background: none;
-  border: 1px solid #e7e5e4;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 18px;
-  cursor: pointer;
-  color: #78716c;
-  transition: all 0.15s;
-}
-
-.refreshBtn:hover {
-  background: #fafaf9;
-  color: #1c1917;
-}
-
-.spinning {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
+/* Main */
 .main {
-  max-width: 900px;
+  max-width: 1060px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 32px 32px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
+/* Random pick */
+.randomBtn {
+  position: absolute;
+  right: 0;
+  background: none;
+  color: #78716c;
+  border: 1px solid #e7e5e4;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.randomBtn:hover {
+  border-color: #d97706;
+  color: #d97706;
+}
+
+.randomBtn:active {
+  transform: scale(0.97);
+}
+
+.randomResult {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 16px 32px;
+  text-align: center;
+  background: #fffbeb;
+  border-bottom: 1px solid #fde68a;
+}
+
+.randomMessage {
+  font-size: 15px;
+  color: #78716c;
+  margin-bottom: 4px;
+}
+
+.randomMeal {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.randomRestaurant {
+  font-size: 15px;
+  color: #78716c;
+  margin-top: 2px;
+}
+
+/* Restaurant card */
 .restaurant {
   background: #ffffff;
   border: 1px solid #e7e5e4;
-  border-radius: 12px;
+  border-left: 4px solid #a8a29e;
   overflow: hidden;
 }
 
 .restaurantHeader {
-  padding: 20px 24px 0;
+  padding: 20px 26px 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.restaurantLogo {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  object-fit: contain;
+  gap: 14px;
 }
 
 .restaurantName {
-  font-size: 18px;
+  font-size: 26px;
   font-weight: 700;
+  color: #1c1917;
+  letter-spacing: -0.3px;
 }
 
-.restaurantLink {
-  font-size: 12px;
-  color: #78716c;
-  text-decoration: none;
-  transition: color 0.15s;
-  margin-left: auto;
-}
-
-.restaurantLink:hover {
-  color: #d97706;
-}
-
+/* Menu */
 .menuSection {
-  padding: 16px 24px 20px;
+  padding: 16px 26px 22px;
 }
 
 .menuGroup {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .menuGroup:last-child {
@@ -117,21 +132,23 @@
 }
 
 .menuGroupLabel {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #78716c;
-  margin-bottom: 8px;
+  letter-spacing: 1.2px;
+  color: #d97706;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #f5f5f4;
 }
 
 .menuItem {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 8px 0;
+  padding: 10px 0;
   border-bottom: 1px solid #f5f5f4;
-  gap: 16px;
+  gap: 24px;
 }
 
 .menuItem:last-child {
@@ -139,72 +156,118 @@
 }
 
 .menuItemName {
-  font-size: 15px;
-  line-height: 1.4;
+  font-size: 17px;
+  line-height: 1.45;
   flex: 1;
+  color: #1c1917;
 }
 
 .menuItemPrice {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: #78716c;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
+/* Closed */
 .closedMessage {
-  padding: 16px 24px 20px;
-  color: #78716c;
-  font-size: 14px;
+  padding: 20px 26px 24px;
+  color: #a8a29e;
+  font-size: 16px;
   font-style: italic;
 }
 
+/* Loading */
 .loading {
   text-align: center;
-  padding: 60px 24px;
-  color: #78716c;
-  font-size: 15px;
+  padding: 80px 32px;
+  color: #a8a29e;
+  font-size: 17px;
 }
 
+/* Footer */
 .footer {
-  max-width: 900px;
+  max-width: 1060px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 24px 32px 36px;
   text-align: center;
 }
 
 .footer p {
-  font-size: 12px;
-  color: #78716c;
+  font-size: 13px;
+  color: #a8a29e;
 }
 
 .footer a {
-  color: #78716c;
-  text-decoration: underline;
+  color: #a8a29e;
+  text-decoration: none;
+  border-bottom: 1px solid #d6d3d1;
+  transition: color 0.15s;
 }
 
+.footer a:hover {
+  color: #d97706;
+}
+
+/* Veggie badge */
+.veggieBadge {
+  display: inline-block;
+  margin-left: 8px;
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+/* Spicy badge */
+.spicyBadge {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+/* Responsive */
 @media (max-width: 640px) {
   .headerInner {
-    padding: 12px 16px;
+    padding: 18px 16px 14px;
   }
 
   .title {
-    font-size: 18px;
+    font-size: 22px;
+  }
+
+  .date {
+    font-size: 16px;
+  }
+
+  .randomBtn {
+    font-size: 12px;
+    padding: 5px 10px;
   }
 
   .main {
     padding: 16px;
-    gap: 16px;
+    gap: 14px;
   }
 
   .restaurantHeader {
-    padding: 16px 16px 0;
+    padding: 16px 18px 0;
+  }
+
+  .restaurantName {
+    font-size: 20px;
   }
 
   .menuSection {
-    padding: 12px 16px 16px;
+    padding: 12px 18px 16px;
   }
 
   .menuItemName {
+    font-size: 15px;
+  }
+
+  .menuItemPrice {
     font-size: 14px;
   }
 }
