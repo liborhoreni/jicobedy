@@ -26,6 +26,14 @@
   font-weight: 700;
   color: #1c1917;
   letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jicLogo {
+  height: 28px;
+  vertical-align: middle;
 }
 
 .date {

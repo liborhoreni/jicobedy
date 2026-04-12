@@ -122,7 +122,7 @@ export default function Home() {
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.headerTop}>
-            <h1 className={styles.title}>Obědy v okolí JIC</h1>
+            <h1 className={styles.title}>Obědy v okolí <img className={styles.jicLogo} src="/jic-logo.svg" alt="JIC" /></h1>
             {data && data.restaurants && data.restaurants.length > 0 && (
               <button className={styles.randomBtn} onClick={pickRandom}>
                 🎲 Náhodné jídlo
