@@ -69,8 +69,8 @@
 }
 
 .randomBtn:hover {
-  border-color: #d97706;
-  color: #d97706;
+  border-color: #7c3aed;
+  color: #7c3aed;
 }
 
 .randomBtn:active {
@@ -78,30 +78,63 @@
 }
 
 .randomResult {
-  max-width: 1060px;
-  margin: 0 auto;
-  padding: 16px 32px;
+  padding: 14px 24px;
   text-align: center;
-  background: #fffbeb;
-  border-bottom: 1px solid #fde68a;
+  background: #ffffff;
+  border: 2px dashed #c4b5fd;
+  border-radius: 12px;
 }
 
 .randomMessage {
   font-size: 15px;
-  color: #78716c;
-  margin-bottom: 4px;
+  color: #a78bfa;
 }
 
 .randomMeal {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   color: #1c1917;
+  margin-top: 4px;
 }
 
 .randomRestaurant {
-  font-size: 15px;
+  font-size: 16px;
   color: #78716c;
-  margin-top: 2px;
+  margin-top: 6px;
+}
+
+/* Rain banner */
+.rainBanner {
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 0;
+  font-size: 15px;
+  color: #4338ca;
+  width: fit-content;
+  margin: 20px auto -12px;
+}
+
+.rainIcon {
+  width: 22px;
+  height: 22px;
+}
+
+.weatherEmoji {
+  font-size: 20px;
+}
+
+/* Weekend */
+.weekendMessage {
+  text-align: center;
+  padding: 80px 32px;
+  font-size: 20px;
+  color: #78716c;
+  line-height: 1.6;
 }
 
 /* Restaurant card */
@@ -152,7 +185,6 @@
 
 .menuItem {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
   padding: 10px 0;
   border-bottom: 1px solid #f5f5f4;
@@ -176,6 +208,7 @@
   color: #78716c;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  margin-left: auto;
 }
 
 /* Closed */
@@ -216,6 +249,66 @@
 
 .footer a:hover {
   color: #d97706;
+}
+
+/* Favorite button */
+.favBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  margin-right: 4px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.favBtn:hover {
+  transform: scale(1.2);
+}
+
+.heartEmpty {
+  display: block;
+}
+
+/* Favorites section */
+.favoritesSection {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  padding: 18px 24px;
+}
+
+.favoritesTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1c1917;
+  margin-bottom: 12px;
+}
+
+.favoriteItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid #fecdd3;
+  gap: 24px;
+}
+
+.favoriteItem:last-child {
+  border-bottom: none;
+}
+
+.favoriteMeal {
+  font-size: 17px;
+  color: #1c1917;
+  flex: 1;
+}
+
+.favoriteRestaurant {
+  font-size: 16px;
+  color: #78716c;
+  white-space: nowrap;
 }
 
 /* Veggie badge */

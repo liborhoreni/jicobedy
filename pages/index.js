@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import confetti from "canvas-confetti";
 import styles from "@/styles/Home.module.css";
 
@@ -15,30 +15,59 @@ function stripNumber(name) {
   return name.replace(/^\d+\.\s*/, '');
 }
 
+function normalize(name) {
+  return stripNumber(name).toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+function getFavorites() {
+  try {
+    return JSON.parse(localStorage.getItem('favorites') || '[]');
+  } catch { return []; }
+}
+
+function saveFavorites(favs) {
+  localStorage.setItem('favorites', JSON.stringify(favs));
+}
+
+function isFavorite(name, favs) {
+  const n = normalize(name);
+  return favs.some(f => normalize(f) === n);
+}
+
 const DAYS = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'];
 const MONTHS = ['ledna', 'února', 'března', 'dubna', 'května', 'června',
   'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'];
 
-function MenuGroup({ label, items }) {
+function MenuGroup({ label, items, favorites, onToggleFav }) {
   if (!items || items.length === 0) return null;
   return (
     <div className={styles.menuGroup}>
       <div className={styles.menuGroupLabel}>{label}</div>
-      {items.map((item, i) => (
-        <div key={i} className={styles.menuItem}>
-          <span className={styles.menuItemName}>
-            {stripNumber(item.name)}
-            {item.veggie && <img className={styles.veggieBadge} src="/vegetarian.png" alt="V" title="Vegetariánské" />}
-            {item.spicy && <span className={styles.spicyBadge} title="Pikantní">🌶️</span>}
-          </span>
-          <span className={styles.menuItemPrice}>{item.price}</span>
-        </div>
-      ))}
+      {items.map((item, i) => {
+        const fav = isFavorite(item.name, favorites);
+        return (
+          <div key={i} className={styles.menuItem}>
+            <button
+              className={styles.favBtn}
+              onClick={() => onToggleFav(item.name)}
+              title={fav ? "Odebrat z oblíbených" : "Přidat do oblíbených"}
+            >
+              {fav ? '❤️' : <svg className={styles.heartEmpty} viewBox="0 0 24 24" width="16" height="16"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="#d6d3d1" strokeWidth="1.5"/></svg>}
+            </button>
+            <span className={styles.menuItemName}>
+              {stripNumber(item.name)}
+              {item.veggie && <img className={styles.veggieBadge} src="/vegetarian.png" alt="V" title="Vegetariánské" />}
+              {item.spicy && <span className={styles.spicyBadge} title="Pikantní">🌶️</span>}
+            </span>
+            <span className={styles.menuItemPrice}>{item.price}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-function RestaurantCard({ r }) {
+function RestaurantCard({ r, favorites, onToggleFav }) {
   const hasMenu = r.menu && (
     (r.menu.soups && r.menu.soups.length > 0) ||
     (r.menu.meals && r.menu.meals.length > 0) ||
@@ -52,12 +81,12 @@ function RestaurantCard({ r }) {
       </div>
 
       {!hasMenu ? (
-        <div className={styles.closedMessage}>{r.note || 'Menu zatím není k dispozici'}</div>
+        <div className={styles.closedMessage}>Restaurace zatím nezveřejnila menu. Jakmile jej zveřejní, zobrazí se zde.</div>
       ) : (
         <div className={styles.menuSection}>
-          <MenuGroup label={r.menu.soups && r.menu.soups.length === 1 ? "Polévka" : "Polévky"} items={r.menu.soups} />
-          <MenuGroup label="Denní menu" items={r.menu.meals} />
-          <MenuGroup label="Týdenní nabídka" items={r.menu.weekly} />
+          <MenuGroup label={r.menu.soups && r.menu.soups.length === 1 ? "Polévka" : "Polévky"} items={r.menu.soups} favorites={favorites} onToggleFav={onToggleFav} />
+          <MenuGroup label="Denní menu" items={r.menu.meals} favorites={favorites} onToggleFav={onToggleFav} />
+          <MenuGroup label="Týdenní nabídka" items={r.menu.weekly} favorites={favorites} onToggleFav={onToggleFav} />
         </div>
       )}
     </div>
@@ -75,12 +104,88 @@ const RANDOM_MESSAGES = [
 export default function Home() {
   const [data, setData] = useState(null);
   const [randomPick, setRandomPick] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+  const [weather, setWeather] = useState(null);
   const now = new Date();
-  const dateStr = `${DAYS[now.getDay()]} ${now.getDate()}. ${MONTHS[now.getMonth()]}`;
+  const dayOfWeek = now.getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const dateStr = `${DAYS[dayOfWeek]} ${now.getDate()}. ${MONTHS[now.getMonth()]}`;
 
   useEffect(() => {
+    setFavorites(getFavorites());
     fetch('/api/menus').then(r => r.json()).then(setData).catch(console.error);
+    // Brno weather check
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=49.19&longitude=16.61&current=weather_code')
+      .then(r => r.json())
+      .then(w => {
+        // Weather codes 51-67: drizzle/rain, 71-77: snow, 80-82: rain showers, 95-99: thunderstorm
+        const code = w?.current?.weather_code;
+        if (code >= 71 && code <= 77) setWeather('snow');
+        else if (code >= 51 && code <= 99) setWeather('rain');
+      })
+      .catch(() => {});
   }, []);
+
+  // Auto-refresh every 15 min if some restaurants are missing menus
+  useEffect(() => {
+    if (!data || !data.restaurants || isWeekend) return;
+    const hasMenu = r => r.menu && (
+      (r.menu.soups && r.menu.soups.length > 0) ||
+      (r.menu.meals && r.menu.meals.length > 0) ||
+      (r.menu.weekly && r.menu.weekly.length > 0)
+    );
+    const allHaveMenu = data.restaurants.every(hasMenu);
+    if (allHaveMenu) return;
+
+    const interval = setInterval(async () => {
+      try {
+        await fetch('/api/scrape', { method: 'POST' });
+        const res = await fetch('/api/menus');
+        setData(await res.json());
+      } catch (e) { console.error(e); }
+    }, 15 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [data, isWeekend]);
+
+  const toggleFav = useCallback((name) => {
+    const clean = stripNumber(name);
+    setFavorites(prev => {
+      const n = normalize(name);
+      const removing = prev.some(f => normalize(f) === n);
+      let next;
+      if (removing) {
+        next = prev.filter(f => normalize(f) !== n);
+      } else {
+        next = [...prev, clean];
+      }
+      saveFavorites(next);
+
+      // Track to server
+      fetch('/api/favorite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meal: clean, action: removing ? 'remove' : 'add' }),
+      }).catch(() => {});
+
+      return next;
+    });
+  }, []);
+
+  // Find today's favorites
+  const todayFavorites = [];
+  if (data && data.restaurants && favorites.length > 0) {
+    for (const r of data.restaurants) {
+      if (!r.menu) continue;
+      for (const section of ['meals', 'weekly']) {
+        for (const item of (r.menu[section] || [])) {
+          if (isFavorite(item.name, favorites)) {
+            todayFavorites.push({ meal: item, restaurant: r.name });
+          }
+        }
+      }
+    }
+  }
 
   function pickRandom() {
     if (!data || !data.restaurants) return;
@@ -97,7 +202,10 @@ export default function Home() {
       }
     }
     if (allMeals.length === 0) return;
-    const pick = allMeals[Math.floor(Math.random() * allMeals.length)];
+    const filtered = allMeals.length > 1 && randomPick
+      ? allMeals.filter(m => m.meal.name !== randomPick.meal.name)
+      : allMeals;
+    const pick = filtered[Math.floor(Math.random() * filtered.length)];
     const msg = RANDOM_MESSAGES[Math.floor(Math.random() * RANDOM_MESSAGES.length)];
     setRandomPick({ ...pick, message: msg });
     confetti({
@@ -119,16 +227,16 @@ export default function Home() {
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </Head>
 
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.headerTop}>
             <h1 className={styles.title}>Obědy v okolí <img className={styles.jicLogo} src="/jic.png" alt="JIC" /></h1>
-            {data && data.restaurants && data.restaurants.length > 0 && (
+            {!isWeekend && data && data.restaurants && data.restaurants.length > 0 && (
               <button className={styles.randomBtn} onClick={pickRandom}>
-                🎲 Náhodné jídlo
+                🎲&nbsp;&nbsp;Náhodné jídlo
               </button>
             )}
           </div>
@@ -136,20 +244,54 @@ export default function Home() {
         </div>
       </header>
 
-      {randomPick && (
-        <div className={styles.randomResult}>
-          <div className={styles.randomMessage}>{randomPick.message}</div>
-          <div className={styles.randomMeal}>{stripNumber(randomPick.meal.name)}</div>
-          <div className={styles.randomRestaurant}>{randomPick.restaurant} {randomPick.meal.price && `· ${randomPick.meal.price}`}</div>
+      {weather && (
+        <div className={styles.rainBanner}>
+          {weather === 'snow'
+            ? <><span className={styles.weatherEmoji}>❄️</span><span>Venku sněží — oblékni se teple!</span></>
+            : <><img className={styles.rainIcon} src="/umbrella.svg" alt="" /><span>Venku prší — nezapomeň si deštník!</span></>
+          }
         </div>
       )}
 
       <main className={styles.main}>
-
-        {!data || !data.restaurants || data.restaurants.length === 0 ? (
-          <div className={styles.loading}>Načítám menu...</div>
+        {isWeekend ? (
+          <div className={styles.weekendMessage}>
+            Dnes je víkend — restaurace mají zavřeno.<br />
+            Užij si volno a uvař si něco dobrého doma!
+          </div>
         ) : (
-          data.restaurants.map(r => <RestaurantCard key={r.id} r={r} />)
+          <>
+            {randomPick && (
+              <div className={styles.randomResult}>
+                <div className={styles.randomMessage}>{randomPick.message}</div>
+                <div className={styles.randomMeal}>{stripNumber(randomPick.meal.name)}</div>
+                <div className={styles.randomRestaurant}>{randomPick.restaurant} {randomPick.meal.price && `· ${randomPick.meal.price}`}</div>
+              </div>
+            )}
+
+            {todayFavorites.length > 0 && (
+              <div className={styles.favoritesSection}>
+                <div className={styles.favoritesTitle}>❤️&nbsp;&nbsp;&nbsp;Tvoje oblíbená jídla dnes v nabídce</div>
+                {todayFavorites.map((f, i) => (
+                  <div key={i} className={styles.favoriteItem}>
+                    <span className={styles.favoriteMeal}>{stripNumber(f.meal.name)}</span>
+                    <span className={styles.favoriteRestaurant}>{f.restaurant} {f.meal.price && `· ${f.meal.price}`}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!data || !data.restaurants || data.restaurants.length === 0 ? (
+              <div className={styles.loading}>Načítám menu...</div>
+            ) : (
+              [...data.restaurants].sort((a, b) => {
+                const aHas = a.menu && ((a.menu.soups && a.menu.soups.length > 0) || (a.menu.meals && a.menu.meals.length > 0) || (a.menu.weekly && a.menu.weekly.length > 0));
+                const bHas = b.menu && ((b.menu.soups && b.menu.soups.length > 0) || (b.menu.meals && b.menu.meals.length > 0) || (b.menu.weekly && b.menu.weekly.length > 0));
+                if (aHas === bHas) return 0;
+                return aHas ? -1 : 1;
+              }).map(r => <RestaurantCard key={r.id} r={r} favorites={favorites} onToggleFav={toggleFav} />)
+            )}
+          </>
         )}
       </main>
 
