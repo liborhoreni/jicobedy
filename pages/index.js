@@ -245,6 +245,7 @@ export default function Home() {
     const pick = filtered[Math.floor(Math.random() * filtered.length)];
     const msg = RANDOM_MESSAGES[Math.floor(Math.random() * RANDOM_MESSAGES.length)];
     setRandomPick({ ...pick, message: msg });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     confetti({
       particleCount: 35,
       spread: 55,
