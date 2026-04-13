@@ -11,9 +11,8 @@
   max-width: 1060px;
   margin: 0 auto;
   padding: 28px 32px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  text-align: center;
+  position: relative;
 }
 
 .title {
@@ -21,7 +20,7 @@
   font-weight: 700;
   color: #1c1917;
   letter-spacing: -0.5px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
 }
@@ -50,7 +49,9 @@
 
 /* Random pick */
 .randomBtn {
-  margin-top: 10px;
+  position: absolute;
+  right: 32px;
+  top: 28px;
   background: none;
   color: #78716c;
   border: 1px solid #e7e5e4;
@@ -403,6 +404,8 @@
   }
 
   .randomBtn {
+    position: static;
+    margin-top: 10px;
     font-size: 13px;
     padding: 6px 14px;
   }
