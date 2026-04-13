@@ -52,7 +52,8 @@
 .randomBtn {
   position: absolute;
   right: 32px;
-  top: 28px;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   color: #78716c;
   border: 1px solid #e7e5e4;
