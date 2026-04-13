@@ -14,15 +14,6 @@
   text-align: center;
 }
 
-.headerTop {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
 .title {
   font-size: 34px;
   font-weight: 700;
@@ -57,6 +48,7 @@
 
 /* Random pick */
 .randomBtn {
+  margin-top: 10px;
   background: none;
   color: #78716c;
   border: 1px solid #e7e5e4;

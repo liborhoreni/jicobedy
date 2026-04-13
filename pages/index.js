@@ -276,15 +276,13 @@ export default function Home() {
 
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <div className={styles.headerTop}>
-            <h1 className={styles.title}>Obědy v okolí <img className={styles.jicLogo} src="/jic.png" alt="JIC" /></h1>
-            {!isWeekend && visibleRestaurants.length > 0 && (
-              <button className={styles.randomBtn} onClick={pickRandom}>
-                🎲&nbsp;&nbsp;Náhodné jídlo
-              </button>
-            )}
-          </div>
+          <h1 className={styles.title}>Obědy v okolí <img className={styles.jicLogo} src="/jic.png" alt="JIC" /></h1>
           <span className={styles.date}>{dateStr}</span>
+          {!isWeekend && visibleRestaurants.length > 0 && (
+            <button className={styles.randomBtn} onClick={pickRandom}>
+              🎲&nbsp;&nbsp;Náhodné jídlo
+            </button>
+          )}
         </div>
       </header>
 
