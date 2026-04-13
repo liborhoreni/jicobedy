@@ -126,6 +126,7 @@ const RANDOM_MESSAGES = [
 
 export default function Home() {
   const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState(false);
   const [randomPick, setRandomPick] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [weather, setWeather] = useState(null);
@@ -138,7 +139,7 @@ export default function Home() {
   useEffect(() => {
     setFavorites(getFavorites());
     setHidden(getHiddenRestaurants());
-    fetch('/api/menus').then(r => r.json()).then(setData).catch(console.error);
+    fetch('/api/menus').then(r => r.json()).then(setData).catch(() => setLoadError(true));
     // Brno weather check
     fetch('https://api.open-meteo.com/v1/forecast?latitude=49.19&longitude=16.61&current=weather_code')
       .then(r => r.json())
@@ -261,6 +262,12 @@ export default function Home() {
         <title>Obědy v okolí JIC</title>
         <meta name="description" content="Denní menu restaurací v okolí JIC Brno" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="Obědy v okolí JIC" />
+        <meta property="og:description" content="Denní menu restaurací v okolí JIC Brno — Kancl Bistro, Cookpoint, Bistro 22, QWERTY, Jean Paul's" />
+        <meta property="og:image" content="https://jicobedy-vercel.vercel.app/og-image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -318,7 +325,9 @@ export default function Home() {
               </div>
             )}
 
-            {!data || !data.restaurants || data.restaurants.length === 0 ? (
+            {loadError ? (
+              <div className={styles.loading}>Menu se nepodařilo načíst. Zkus obnovit stránku.</div>
+            ) : !data || !data.restaurants || data.restaurants.length === 0 ? (
               <div className={styles.loading}>Načítám menu...</div>
             ) : (
               <>
