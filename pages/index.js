@@ -35,6 +35,16 @@ function saveFavorites(favs) {
   localStorage.setItem('favorites', JSON.stringify(favs));
 }
 
+function getHiddenRestaurants() {
+  try {
+    return JSON.parse(localStorage.getItem('hiddenRestaurants') || '[]');
+  } catch { return []; }
+}
+
+function saveHiddenRestaurants(ids) {
+  localStorage.setItem('hiddenRestaurants', JSON.stringify(ids));
+}
+
 function isFavorite(name, favs) {
   const n = normalize(name);
   return favs.some(f => normalize(f.name) === n);
@@ -79,7 +89,7 @@ function MenuGroup({ label, items, favorites, onToggleFav }) {
   );
 }
 
-function RestaurantCard({ r, favorites, onToggleFav }) {
+function RestaurantCard({ r, favorites, onToggleFav, onHide }) {
   const hasMenu = r.menu && (
     (r.menu.soups && r.menu.soups.length > 0) ||
     (r.menu.meals && r.menu.meals.length > 0) ||
@@ -90,6 +100,7 @@ function RestaurantCard({ r, favorites, onToggleFav }) {
     <div className={styles.restaurant} style={{ borderLeftColor: RESTAURANT_COLORS[r.id] || '#a8a29e' }}>
       <div className={styles.restaurantHeader}>
         <span className={styles.restaurantName}>{r.name}</span>
+        <button className={styles.hideBtn} onClick={() => onHide(r.id)} title="Skrýt restauraci">✕</button>
       </div>
 
       {!hasMenu ? (
@@ -118,6 +129,7 @@ export default function Home() {
   const [randomPick, setRandomPick] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [weather, setWeather] = useState(null);
+  const [hidden, setHidden] = useState([]);
   const now = new Date();
   const dayOfWeek = now.getDay();
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
@@ -125,6 +137,7 @@ export default function Home() {
 
   useEffect(() => {
     setFavorites(getFavorites());
+    setHidden(getHiddenRestaurants());
     fetch('/api/menus').then(r => r.json()).then(setData).catch(console.error);
     // Brno weather check
     fetch('https://api.open-meteo.com/v1/forecast?latitude=49.19&longitude=16.61&current=weather_code')
@@ -184,10 +197,22 @@ export default function Home() {
     });
   }, []);
 
+  const toggleHide = useCallback((id) => {
+    setHidden(prev => {
+      const next = prev.includes(id) ? prev.filter(h => h !== id) : [...prev, id];
+      saveHiddenRestaurants(next);
+      return next;
+    });
+  }, []);
+
+  // Visible and hidden restaurant lists
+  const visibleRestaurants = data?.restaurants?.filter(r => !hidden.includes(r.id)) || [];
+  const hiddenRestaurants = data?.restaurants?.filter(r => hidden.includes(r.id)) || [];
+
   // Find old favorites that are in today's menu
   const todayFavorites = [];
-  if (data && data.restaurants && favorites.length > 0) {
-    for (const r of data.restaurants) {
+  if (visibleRestaurants.length > 0 && favorites.length > 0) {
+    for (const r of visibleRestaurants) {
       if (!r.menu) continue;
       for (const section of ['meals', 'weekly']) {
         for (const item of (r.menu[section] || [])) {
@@ -200,9 +225,9 @@ export default function Home() {
   }
 
   function pickRandom() {
-    if (!data || !data.restaurants) return;
+    if (visibleRestaurants.length === 0) return;
     const allMeals = [];
-    for (const r of data.restaurants) {
+    for (const r of visibleRestaurants) {
       if (!r.menu) continue;
       for (const item of (r.menu.meals || [])) {
         allMeals.push({ meal: item, restaurant: r.name });
@@ -246,7 +271,7 @@ export default function Home() {
         <div className={styles.headerInner}>
           <div className={styles.headerTop}>
             <h1 className={styles.title}>Obědy v okolí <img className={styles.jicLogo} src="/jic.png" alt="JIC" /></h1>
-            {!isWeekend && data && data.restaurants && data.restaurants.length > 0 && (
+            {!isWeekend && visibleRestaurants.length > 0 && (
               <button className={styles.randomBtn} onClick={pickRandom}>
                 🎲&nbsp;&nbsp;Náhodné jídlo
               </button>
@@ -296,12 +321,26 @@ export default function Home() {
             {!data || !data.restaurants || data.restaurants.length === 0 ? (
               <div className={styles.loading}>Načítám menu...</div>
             ) : (
-              [...data.restaurants].sort((a, b) => {
-                const aHas = a.menu && ((a.menu.soups && a.menu.soups.length > 0) || (a.menu.meals && a.menu.meals.length > 0) || (a.menu.weekly && a.menu.weekly.length > 0));
-                const bHas = b.menu && ((b.menu.soups && b.menu.soups.length > 0) || (b.menu.meals && b.menu.meals.length > 0) || (b.menu.weekly && b.menu.weekly.length > 0));
-                if (aHas === bHas) return 0;
-                return aHas ? -1 : 1;
-              }).map(r => <RestaurantCard key={r.id} r={r} favorites={favorites} onToggleFav={toggleFav} />)
+              <>
+                {[...visibleRestaurants].sort((a, b) => {
+                  const aHas = a.menu && ((a.menu.soups && a.menu.soups.length > 0) || (a.menu.meals && a.menu.meals.length > 0) || (a.menu.weekly && a.menu.weekly.length > 0));
+                  const bHas = b.menu && ((b.menu.soups && b.menu.soups.length > 0) || (b.menu.meals && b.menu.meals.length > 0) || (b.menu.weekly && b.menu.weekly.length > 0));
+                  if (aHas === bHas) return 0;
+                  return aHas ? -1 : 1;
+                }).map(r => <RestaurantCard key={r.id} r={r} favorites={favorites} onToggleFav={toggleFav} onHide={toggleHide} />)}
+
+                {hiddenRestaurants.length > 0 && (
+                  <div className={styles.hiddenSection}>
+                    <div className={styles.hiddenTitle}>Skryté restaurace</div>
+                    {hiddenRestaurants.map(r => (
+                      <div key={r.id} className={styles.hiddenItem}>
+                        <span className={styles.hiddenName}>{r.name}</span>
+                        <button className={styles.unhideBtn} onClick={() => toggleHide(r.id)}>Zobrazit</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
