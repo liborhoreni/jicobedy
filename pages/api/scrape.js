@@ -40,9 +40,32 @@ async function ocrQwertyImage() {
   return response.content[0].text;
 }
 
+function hasMenuData(r) {
+  return r.menu && (
+    (r.menu.soups && r.menu.soups.length > 0) ||
+    (r.menu.meals && r.menu.meals.length > 0) ||
+    (r.menu.weekly && r.menu.weekly.length > 0)
+  );
+}
+
 export default async function handler(req, res) {
   try {
     const kv = getRedis();
+
+    // For cron calls: check if all restaurants already have menus today
+    const isCron = req.headers['x-vercel-cron'];
+    if (isCron) {
+      const cached = await kv.get('menus').catch(() => null);
+      if (cached && cached.restaurants) {
+        const today = new Date().toISOString().slice(0, 10);
+        const cachedToday = cached.scrapedAt && cached.scrapedAt.slice(0, 10) === today;
+        const allHaveMenu = cached.restaurants.every(hasMenuData);
+        if (cachedToday && allHaveMenu) {
+          return res.json({ ok: true, skipped: true, reason: 'all restaurants have menus' });
+        }
+      }
+    }
+
     const data = await scrapeAll();
 
     // QWERTY OCR: automaticky přes Claude Vision, fallback na uložený text
@@ -78,7 +101,9 @@ export default async function handler(req, res) {
     }
 
     await kv.set('menus', data);
-    res.json({ ok: true, date: data.date, count: data.restaurants.length });
+
+    const withMenu = data.restaurants.filter(hasMenuData).length;
+    res.json({ ok: true, date: data.date, total: data.restaurants.length, withMenu });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

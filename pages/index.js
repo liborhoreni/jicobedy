@@ -151,7 +151,7 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  // Auto-refresh every 15 min if some restaurants are missing menus
+  // Auto-refresh every 10 min if some restaurants are missing menus
   useEffect(() => {
     if (!data || !data.restaurants || isWeekend) return;
     const hasMenu = r => r.menu && (
@@ -164,11 +164,10 @@ export default function Home() {
 
     const interval = setInterval(async () => {
       try {
-        await fetch('/api/scrape', { method: 'POST' });
         const res = await fetch('/api/menus');
         setData(await res.json());
       } catch (e) { console.error(e); }
-    }, 15 * 60 * 1000);
+    }, 10 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [data, isWeekend]);
