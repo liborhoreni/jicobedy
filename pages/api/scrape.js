@@ -53,7 +53,8 @@ Formát (POUZE JSON, žádný jiný text):
 Pravidla:
 - "soup" = PRVNÍ položka pod daným dnem (to je vždy polévka)
 - "meal" = DRUHÁ položka pod daným dnem (to je vždy hlavní jídlo)
-- "weekly" = všechny položky z "Týdenní nabídka" (BEZ pizzy)
+- "weekly" = POUZE položky ze sekce "Týdenní nabídka" VČETNĚ pizzy (pizza jako jeden řádek se všemi druhy)
+- IGNORUJ kompletně sekci "Jídelní lístek" — žádné položky z ní nezahrnuj
 - Ceny ve formátu "180 Kč" — u každé položky přiřaď její cenu
 - Názvy BEZ alergenů a BEZ gramáže
 - Pokud den "${dayName}" v menu není, vrať null pro soup i meal` },
