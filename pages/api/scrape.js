@@ -1,5 +1,5 @@
 import { getRedis } from '../../lib/kv';
-import { scrapeAll, parseQwertyHtml, parseQwertyOcr } from '../../lib/scraper';
+import { scrapeAll, parseQwertyHtml } from '../../lib/scraper';
 import { classifyVeggie } from '../../lib/classify-veggie';
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -7,7 +7,7 @@ export const config = {
   maxDuration: 60,
 };
 
-async function ocrQwertyImage() {
+async function ocrQwertyMenu(dateOverride) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
 
@@ -23,7 +23,11 @@ async function ocrQwertyImage() {
   const base64 = Buffer.from(imgBuffer).toString('base64');
   const mediaType = imageUrl.includes('.png') ? 'image/png' : 'image/jpeg';
 
-  // Send to Claude for OCR
+  const today = dateOverride ? new Date(dateOverride) : new Date();
+  const days = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'];
+  const dayName = days[today.getDay()];
+
+  // Send to Claude — get structured JSON directly
   const client = new Anthropic({ apiKey });
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
@@ -32,12 +36,47 @@ async function ocrQwertyImage() {
       role: 'user',
       content: [
         { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-        { type: 'text', text: 'Přečti VEŠKERÝ text z tohoto obrázku jídelního lístku. Zachovej strukturu: dny v týdnu, názvy jídel, ceny. Vypiš přesně jak je na obrázku, každou položku na nový řádek. Žádný komentář, jen text z obrázku.' },
+        { type: 'text', text: `Toto je jídelní lístek restaurace QWERTY. Vrať JSON s menu pro den "${dayName}" a týdenní nabídku.
+
+Formát odpovědi (POUZE JSON, žádný jiný text):
+{
+  "soup": {"name": "název polévky", "price": "cena Kč"},
+  "meal": {"name": "název denního jídla", "price": "cena Kč"},
+  "weekly": [{"name": "název", "price": "cena Kč"}, ...]
+}
+
+Pravidla:
+- "soup" = polévka pro daný den (název bez alergenů)
+- "meal" = hlavní jídlo pro daný den (název bez alergenů)
+- "weekly" = týdenní nabídka (všechny položky, bez pizzy a bez sekce "Jídelní lístek")
+- Ceny ve formátu "180 Kč"
+- Názvy jídel BEZ číslic alergenů a BEZ gramáže
+- Pokud den v menu není, vrať null pro soup a meal` },
       ],
     }],
   });
 
-  return response.content[0].text;
+  try {
+    const text = response.content[0].text.trim();
+    const json = JSON.parse(text.replace(/```json\n?/g, '').replace(/```/g, ''));
+    const menu = { soups: [], meals: [], weekly: [] };
+
+    if (json.soup && json.soup.name) {
+      menu.soups.push({ name: json.soup.name, price: json.soup.price || '' });
+    }
+    if (json.meal && json.meal.name) {
+      menu.meals.push({ name: json.meal.name, price: json.meal.price || '' });
+    }
+    if (Array.isArray(json.weekly)) {
+      for (const item of json.weekly) {
+        if (item.name) menu.weekly.push({ name: item.name, price: item.price || '' });
+      }
+    }
+
+    return menu;
+  } catch {
+    return null;
+  }
 }
 
 function hasMenuData(r) {
@@ -69,29 +108,22 @@ export default async function handler(req, res) {
 
     const data = await scrapeAll(dateOverride);
 
-    // QWERTY OCR: automaticky přes Claude Vision, fallback na uložený text
-    let qwertyOcr = null;
+    // QWERTY: OCR přes Claude Vision → strukturovaný JSON
     try {
-      qwertyOcr = await ocrQwertyImage();
-      if (qwertyOcr) await kv.set('qwerty-ocr', qwertyOcr);
+      const qwertyMenu = await ocrQwertyMenu(dateOverride);
+      if (qwertyMenu) {
+        const qwertyIndex = data.restaurants.findIndex(r => r.id === 'qwerty');
+        if (qwertyIndex >= 0) {
+          const hasMenu = qwertyMenu.soups.length > 0 || qwertyMenu.meals.length > 0 || qwertyMenu.weekly.length > 0;
+          data.restaurants[qwertyIndex] = {
+            ...data.restaurants[qwertyIndex],
+            menu: hasMenu ? qwertyMenu : null,
+            closed: !hasMenu,
+          };
+        }
+      }
     } catch (e) {
       console.error('QWERTY OCR failed:', e.message);
-    }
-    if (!qwertyOcr) {
-      qwertyOcr = await kv.get('qwerty-ocr').catch(() => null);
-    }
-
-    if (qwertyOcr) {
-      const qwertyIndex = data.restaurants.findIndex(r => r.id === 'qwerty');
-      if (qwertyIndex >= 0) {
-        const menu = parseQwertyOcr(qwertyOcr, dateOverride);
-        const hasMenu = menu.soups.length > 0 || menu.meals.length > 0 || menu.weekly.length > 0;
-        data.restaurants[qwertyIndex] = {
-          ...data.restaurants[qwertyIndex],
-          menu: hasMenu ? menu : null,
-          closed: !hasMenu,
-        };
-      }
     }
 
     // Classify vegetarian items via AI
