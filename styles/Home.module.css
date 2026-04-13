@@ -71,7 +71,7 @@
 }
 
 .randomBtn:active {
-  transform: scale(0.97);
+  transform: translateY(-50%) scale(0.97);
 }
 
 .randomResult {
@@ -411,6 +411,10 @@
     margin-top: 16px;
     font-size: 13px;
     padding: 6px 14px;
+  }
+
+  .randomBtn:active {
+    transform: scale(0.97);
   }
 
   .main {
