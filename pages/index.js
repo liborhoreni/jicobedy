@@ -164,6 +164,7 @@ export default function Home() {
 
     const interval = setInterval(async () => {
       try {
+        await fetch('/api/scrape');
         const res = await fetch('/api/menus');
         setData(await res.json());
       } catch (e) { console.error(e); }
