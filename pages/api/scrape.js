@@ -51,6 +51,7 @@ function hasMenuData(r) {
 export default async function handler(req, res) {
   try {
     const kv = getRedis();
+    const dateOverride = req.query.date || null;
 
     // For cron calls: check if all restaurants already have menus today
     const isCron = req.headers['x-vercel-cron'];
@@ -66,7 +67,7 @@ export default async function handler(req, res) {
       }
     }
 
-    const data = await scrapeAll();
+    const data = await scrapeAll(dateOverride);
 
     // QWERTY OCR: automaticky přes Claude Vision, fallback na uložený text
     let qwertyOcr = null;
@@ -83,7 +84,7 @@ export default async function handler(req, res) {
     if (qwertyOcr) {
       const qwertyIndex = data.restaurants.findIndex(r => r.id === 'qwerty');
       if (qwertyIndex >= 0) {
-        const menu = parseQwertyOcr(qwertyOcr);
+        const menu = parseQwertyOcr(qwertyOcr, dateOverride);
         const hasMenu = menu.soups.length > 0 || menu.meals.length > 0 || menu.weekly.length > 0;
         data.restaurants[qwertyIndex] = {
           ...data.restaurants[qwertyIndex],
