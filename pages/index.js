@@ -79,7 +79,6 @@ function MenuGroup({ label, items, favorites, onToggleFav }) {
             <span className={styles.menuItemName}>
               {stripNumber(item.name)}
               {item.veggie && <img className={styles.veggieBadge} src="/vegetarian.png" alt="V" title="Vegetariánské" />}
-              {item.spicy && <span className={styles.spicyBadge} title="Pikantní">🌶️</span>}
             </span>
             <span className={styles.menuItemPrice}>{item.price}</span>
           </div>
