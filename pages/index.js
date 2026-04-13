@@ -264,7 +264,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta property="og:title" content="Obědy v okolí JIC" />
         <meta property="og:description" content="Denní menu restaurací v okolí JIC Brno — Kancl Bistro, Cookpoint, Bistro 22, QWERTY, Jean Paul's" />
-        <meta property="og:image" content="https://jicobedy-vercel.vercel.app/og-image.png" />
+        <meta property="og:image" content="https://jicobedy.cz/og-image.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:type" content="website" />
