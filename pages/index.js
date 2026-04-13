@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import confetti from "canvas-confetti";
 import styles from "@/styles/Home.module.css";
 
@@ -127,7 +127,6 @@ export default function Home() {
   const [data, setData] = useState(null);
   const [loadError, setLoadError] = useState(false);
   const [randomPick, setRandomPick] = useState(null);
-  const randomRef = useRef(null);
   const [favorites, setFavorites] = useState([]);
   const [weather, setWeather] = useState(null);
   const [hidden, setHidden] = useState([]);
@@ -246,7 +245,6 @@ export default function Home() {
     const pick = filtered[Math.floor(Math.random() * filtered.length)];
     const msg = RANDOM_MESSAGES[Math.floor(Math.random() * RANDOM_MESSAGES.length)];
     setRandomPick({ ...pick, message: msg });
-    setTimeout(() => randomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
     confetti({
       particleCount: 35,
       spread: 55,
@@ -305,7 +303,7 @@ export default function Home() {
         ) : (
           <>
             {randomPick && (
-              <div ref={randomRef} className={styles.randomResult}>
+              <div className={styles.randomResult}>
                 <div className={styles.randomMessage}>{randomPick.message}</div>
                 <div className={styles.randomMeal}>{stripNumber(randomPick.meal.name)}</div>
                 <div className={styles.randomRestaurant}>{randomPick.restaurant} {randomPick.meal.price && `· ${randomPick.meal.price}`}</div>

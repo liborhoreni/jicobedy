@@ -405,9 +405,13 @@
     font-size: 16px;
   }
 
+  .date {
+    margin-bottom: 6px;
+  }
+
   .randomBtn {
     position: static;
-    margin-top: 14px;
+    margin-top: 8px;
     font-size: 13px;
     padding: 6px 14px;
   }
