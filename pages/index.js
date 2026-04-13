@@ -146,7 +146,7 @@ export default function Home() {
         // Weather codes 51-67: drizzle/rain, 71-77: snow, 80-82: rain showers, 95-99: thunderstorm
         const code = w?.current?.weather_code;
         if (code >= 71 && code <= 77) setWeather('snow');
-        else if (code >= 51 && code <= 99) setWeather('rain');
+        else if (code > 70) setWeather('rain');
       })
       .catch(() => {});
   }, []);
