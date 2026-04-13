@@ -36,22 +36,27 @@ async function ocrQwertyMenu(dateOverride) {
       role: 'user',
       content: [
         { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-        { type: 'text', text: `Toto je jídelní lístek restaurace QWERTY. Vrať JSON s menu pro den "${dayName}" a týdenní nabídku.
+        { type: 'text', text: `Toto je jídelní lístek restaurace QWERTY. Menu má tuto strukturu:
+- Pod každým dnem (Pondělí, Úterý, ...) jsou VŽDY DVĚ položky: první je POLÉVKA, druhá je HLAVNÍ JÍDLO
+- Pod "Týdenní nabídka" jsou jídla dostupná celý týden
+- Pod "Jídelní lístek" jsou stálá jídla — ty IGNORUJ
 
-Formát odpovědi (POUZE JSON, žádný jiný text):
+Vrať JSON s menu pro den "${dayName}" a týdenní nabídku.
+
+Formát (POUZE JSON, žádný jiný text):
 {
   "soup": {"name": "název polévky", "price": "cena Kč"},
-  "meal": {"name": "název denního jídla", "price": "cena Kč"},
+  "meal": {"name": "název hlavního jídla", "price": "cena Kč"},
   "weekly": [{"name": "název", "price": "cena Kč"}, ...]
 }
 
 Pravidla:
-- "soup" = polévka pro daný den (název bez alergenů)
-- "meal" = hlavní jídlo pro daný den (název bez alergenů)
-- "weekly" = týdenní nabídka (všechny položky, bez pizzy a bez sekce "Jídelní lístek")
-- Ceny ve formátu "180 Kč"
-- Názvy jídel BEZ číslic alergenů a BEZ gramáže
-- Pokud den v menu není, vrať null pro soup a meal` },
+- "soup" = PRVNÍ položka pod daným dnem (to je vždy polévka)
+- "meal" = DRUHÁ položka pod daným dnem (to je vždy hlavní jídlo)
+- "weekly" = všechny položky z "Týdenní nabídka" (BEZ pizzy)
+- Ceny ve formátu "180 Kč" — u každé položky přiřaď její cenu
+- Názvy BEZ alergenů a BEZ gramáže
+- Pokud den "${dayName}" v menu není, vrať null pro soup i meal` },
       ],
     }],
   });
