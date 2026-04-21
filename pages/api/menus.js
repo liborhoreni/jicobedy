@@ -24,7 +24,7 @@ const DEMO_DATA = {
       closed: false,
     },
     {
-      id: '4931', name: 'Jídelna Cookpoint', slug: 'cook-point',
+      id: '4931', name: 'Jídelna CEITEC', slug: 'cook-point',
       logo: '/logos/cookpoint.jpg',
       sourceUrl: 'https://www.menicka.cz/4931-cook-point.html',
       menu: {
