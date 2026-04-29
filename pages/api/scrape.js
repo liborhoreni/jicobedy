@@ -67,15 +67,21 @@ Pravidla:
     const json = JSON.parse(text.replace(/```json\n?/g, '').replace(/```/g, ''));
     const menu = { soups: [], meals: [], weekly: [] };
 
+    const cleanPrice = (p) => {
+      if (!p) return '';
+      if (/neuveden|není|nelze|^[-–—?]/i.test(p)) return '';
+      return p;
+    };
+
     if (json.soup && json.soup.name) {
-      menu.soups.push({ name: json.soup.name, price: json.soup.price || '' });
+      menu.soups.push({ name: json.soup.name, price: cleanPrice(json.soup.price) });
     }
     if (json.meal && json.meal.name) {
-      menu.meals.push({ name: json.meal.name, price: json.meal.price || '' });
+      menu.meals.push({ name: json.meal.name, price: cleanPrice(json.meal.price) });
     }
     if (Array.isArray(json.weekly)) {
       for (const item of json.weekly) {
-        if (item.name) menu.weekly.push({ name: item.name, price: item.price || '' });
+        if (item.name) menu.weekly.push({ name: item.name, price: cleanPrice(item.price) });
       }
     }
 
