@@ -104,20 +104,6 @@ export default async function handler(req, res) {
     const kv = getRedis();
     const dateOverride = req.query.date || null;
 
-    // For cron calls: check if all restaurants already have menus today
-    const isCron = req.headers['x-vercel-cron'];
-    if (isCron) {
-      const cached = await kv.get('menus').catch(() => null);
-      if (cached && cached.restaurants) {
-        const today = new Date().toISOString().slice(0, 10);
-        const cachedToday = cached.scrapedAt && cached.scrapedAt.slice(0, 10) === today;
-        const allHaveMenu = cached.restaurants.every(hasMenuData);
-        if (cachedToday && allHaveMenu) {
-          return res.json({ ok: true, skipped: true, reason: 'all restaurants have menus' });
-        }
-      }
-    }
-
     const data = await scrapeAll(dateOverride);
 
     // QWERTY: OCR přes Claude Vision → strukturovaný JSON
