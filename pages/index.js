@@ -2,6 +2,7 @@ import Head from "next/head";
 import { useState, useEffect, useCallback } from "react";
 import confetti from "canvas-confetti";
 import styles from "@/styles/Home.module.css";
+import { hasMenuData } from "@/lib/menu";
 
 const RESTAURANT_COLORS = {
   '8518': '#e74c3c',
@@ -89,11 +90,7 @@ function MenuGroup({ label, items, favorites, onToggleFav }) {
 }
 
 function RestaurantCard({ r, favorites, onToggleFav, onHide }) {
-  const hasMenu = r.menu && (
-    (r.menu.soups && r.menu.soups.length > 0) ||
-    (r.menu.meals && r.menu.meals.length > 0) ||
-    (r.menu.weekly && r.menu.weekly.length > 0)
-  );
+  const hasMenu = hasMenuData(r);
 
   return (
     <div className={styles.restaurant} style={{ borderLeftColor: RESTAURANT_COLORS[r.id] || '#a8a29e' }}>
@@ -151,20 +148,17 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  // Auto-refresh every 10 min if some restaurants are missing menus
+  // Auto-refresh every 10 min if some restaurants are missing menus.
+  // /api/refresh má serverový zámek — scrape proběhne max. 1× za 10 min
+  // bez ohledu na počet otevřených prohlížečů.
   useEffect(() => {
     if (!data || !data.restaurants || isWeekend) return;
-    const hasMenu = r => r.menu && (
-      (r.menu.soups && r.menu.soups.length > 0) ||
-      (r.menu.meals && r.menu.meals.length > 0) ||
-      (r.menu.weekly && r.menu.weekly.length > 0)
-    );
-    const allHaveMenu = data.restaurants.every(hasMenu);
+    const allHaveMenu = data.restaurants.every(hasMenuData);
     if (allHaveMenu) return;
 
     const interval = setInterval(async () => {
       try {
-        await fetch('/api/scrape');
+        await fetch('/api/refresh');
         const res = await fetch('/api/menus');
         setData(await res.json());
       } catch (e) { console.error(e); }
@@ -332,8 +326,8 @@ export default function Home() {
             ) : (
               <>
                 {[...visibleRestaurants].sort((a, b) => {
-                  const aHas = a.menu && ((a.menu.soups && a.menu.soups.length > 0) || (a.menu.meals && a.menu.meals.length > 0) || (a.menu.weekly && a.menu.weekly.length > 0));
-                  const bHas = b.menu && ((b.menu.soups && b.menu.soups.length > 0) || (b.menu.meals && b.menu.meals.length > 0) || (b.menu.weekly && b.menu.weekly.length > 0));
+                  const aHas = hasMenuData(a);
+                  const bHas = hasMenuData(b);
                   if (aHas === bHas) return 0;
                   return aHas ? -1 : 1;
                 }).map(r => <RestaurantCard key={r.id} r={r} favorites={favorites} onToggleFav={toggleFav} onHide={toggleHide} />)}

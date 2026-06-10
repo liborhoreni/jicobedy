@@ -17,7 +17,18 @@ export default async function handler(req, res) {
       .filter(f => f.count > 0)
       .sort((a, b) => b.count - a.count);
 
-    res.json({ favorites: sorted, totalFavorites: Number(totalFavorites), usersToday: Number(usersToday) });
+    // Stav posledního scrapu — odliší rozbitý parser od zavřené restaurace
+    const menus = await kv.get('menus');
+    const scrape = {
+      scrapedAt: menus?.scrapedAt || null,
+      restaurants: (menus?.restaurants || []).map(r => ({
+        name: r.name,
+        closed: !!r.closed,
+        error: r.error || null,
+      })),
+    };
+
+    res.json({ favorites: sorted, totalFavorites: Number(totalFavorites), usersToday: Number(usersToday), scrape });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

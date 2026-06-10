@@ -95,6 +95,9 @@ const DEMO_DATA = {
 };
 
 export default async function handler(req, res) {
+  // Vercel edge cache — šetří KV čtení a zrychluje načtení
+  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+
   const kv = getRedis();
   if (!kv) {
     return res.json(DEMO_DATA);
