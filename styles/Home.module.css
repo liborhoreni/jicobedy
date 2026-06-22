@@ -545,24 +545,29 @@
     font-size: 16px;
   }
 
+  /* Tlačítka pod sebou, vycentrovaná (ne vedle sebe v jednom řádku) */
+  .allergenBtn {
+    position: relative;
+    display: block;
+    width: fit-content;
+    transform: none;
+    margin: 24px auto 0;
+    font-size: 13px;
+    padding: 6px 14px;
+  }
+
   .randomBtn {
     position: static;
+    display: block;
+    width: fit-content;
     transform: none;
-    margin-top: 12px;
+    margin: 10px auto 0;
     font-size: 13px;
     padding: 6px 14px;
   }
 
   .randomBtn:active {
     transform: scale(0.97);
-  }
-
-  .allergenBtn {
-    position: relative;
-    transform: none;
-    margin-top: 22px;
-    font-size: 13px;
-    padding: 6px 14px;
   }
 
   .allergenPanelInner {
