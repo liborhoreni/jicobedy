@@ -74,6 +74,118 @@
   transform: translateY(-50%) scale(0.97);
 }
 
+/* Filtr alergenů */
+.allergenBtn {
+  position: absolute;
+  left: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  color: #78716c;
+  border: 1px solid #e7e5e4;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+
+.allergenBtn:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.allergenBtnActive {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.allergenPanel {
+  background: #ffffff;
+  border-bottom: 1px solid #e7e5e4;
+}
+
+.allergenPanelInner {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 18px 32px 22px;
+}
+
+.allergenPanelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.allergenPanelTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1c1917;
+}
+
+.allergenClear {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.allergenClear:hover {
+  text-decoration: underline;
+}
+
+.allergenGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px 18px;
+}
+
+.allergenOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: #44403c;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.allergenOption input {
+  width: 17px;
+  height: 17px;
+  accent-color: #dc2626;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.allergenNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f5f5f4;
+  color: #78716c;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.allergenNote {
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #a8a29e;
+}
+
 .randomResult {
   padding: 14px 24px;
   text-align: center;
@@ -408,13 +520,35 @@
   .randomBtn {
     position: static;
     transform: none;
-    margin-top: 16px;
+    margin-top: 12px;
     font-size: 13px;
     padding: 6px 14px;
   }
 
   .randomBtn:active {
     transform: scale(0.97);
+  }
+
+  .allergenBtn {
+    position: static;
+    transform: none;
+    margin-top: 14px;
+    font-size: 13px;
+    padding: 6px 14px;
+  }
+
+  .allergenPanelInner {
+    padding: 16px;
+  }
+
+  .allergenGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+  }
+
+  .allergenOption {
+    font-size: 13px;
+    gap: 6px;
   }
 
   .main {
