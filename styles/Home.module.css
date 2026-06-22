@@ -562,6 +562,9 @@
 
   .allergenBtn {
     position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
     transform: none;
     margin: 0;
     font-size: 13px;
@@ -570,6 +573,9 @@
 
   .randomBtn {
     position: static;
+    top: auto;
+    left: auto;
+    right: auto;
     transform: none;
     margin: 0;
     font-size: 13px;
