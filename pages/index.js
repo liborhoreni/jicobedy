@@ -368,20 +368,26 @@ export default function Home() {
         <div className={styles.headerInner}>
           <h1 className={styles.title}>Obědy v okolí <img className={styles.jicLogo} src="/jic.png" alt="JIC" /></h1>
           <span className={styles.date}>{dateStr}</span>
-          {!isWeekend && (
-            <button
-              className={`${styles.allergenBtn} ${excluded.length > 0 ? styles.allergenBtnActive : ''}`}
-              onClick={() => setShowAllergenPanel(v => !v)}
-            >
-              {excluded.length === 0 && now < NOVINKA_UNTIL && <span className={styles.novinkaBadge}>✨ novinka</span>}
-              🚫&nbsp;&nbsp;Filtr alergenů{excluded.length > 0 ? ` (${excluded.length})` : ''}
-            </button>
-          )}
-          {!isWeekend && visibleRestaurants.length > 0 && (
-            <button className={styles.randomBtn} onClick={pickRandom}>
-              🎲&nbsp;&nbsp;Náhodné jídlo
-            </button>
-          )}
+          <div className={styles.headerBtns}>
+            {!isWeekend && (
+              <button
+                className={`${styles.allergenBtn} ${excluded.length > 0 ? styles.allergenBtnActive : ''}`}
+                onClick={() => setShowAllergenPanel(v => {
+                  const next = !v;
+                  if (next) window.scrollTo({ top: 0, behavior: 'smooth' });
+                  return next;
+                })}
+              >
+                {excluded.length === 0 && now < NOVINKA_UNTIL && <span className={styles.novinkaBadge}>✨ novinka</span>}
+                🚫&nbsp;&nbsp;Filtr alergenů{excluded.length > 0 ? ` (${excluded.length})` : ''}
+              </button>
+            )}
+            {!isWeekend && visibleRestaurants.length > 0 && (
+              <button className={styles.randomBtn} onClick={pickRandom}>
+                🎲&nbsp;&nbsp;Náhodné jídlo
+              </button>
+            )}
+          </div>
         </div>
       </header>
 

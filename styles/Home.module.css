@@ -15,6 +15,12 @@
   position: relative;
 }
 
+/* Na desktopu se obal "rozpustí" → tlačítka se pozicují absolutně po stranách.
+   Na mobilu (viz @media) se z něj stane flex řádek s tlačítky vedle sebe. */
+.headerBtns {
+  display: contents;
+}
+
 .title {
   font-size: 34px;
   font-weight: 700;
@@ -545,23 +551,27 @@
     font-size: 16px;
   }
 
-  /* Tlačítka pod sebou, vycentrovaná (ne vedle sebe v jednom řádku) */
+  /* Tlačítka vedle sebe v jednom vycentrovaném řádku s mezerou */
+  .headerBtns {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
   .allergenBtn {
     position: relative;
-    display: block;
-    width: fit-content;
     transform: none;
-    margin: 24px auto 0;
+    margin: 0;
     font-size: 13px;
     padding: 6px 14px;
   }
 
   .randomBtn {
     position: static;
-    display: block;
-    width: fit-content;
     transform: none;
-    margin: 10px auto 0;
+    margin: 0;
     font-size: 13px;
     padding: 6px 14px;
   }
