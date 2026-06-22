@@ -394,7 +394,7 @@ export default function Home() {
               ))}
             </div>
             <div className={styles.allergenNote}>
-              Filtrují se jídla podle alergenů uvedených restaurací. Pokud u jídla alergeny chybí, zůstává zobrazené — nelze u něj potvrdit, že alergen neobsahuje. Řiď se vždy i údaji přímo v restauraci.
+              Kancl Bistro neuvádí alergeny, zobrazují se proto všechna jeho jídla.
             </div>
           </div>
         </div>
