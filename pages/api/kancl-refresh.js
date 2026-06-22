@@ -1,5 +1,5 @@
 import { getRedis } from '../../lib/kv';
-import { fetchKanclWeekly, todayKey } from '../../lib/kancl-fb';
+import { fetchKanclWeekly, relevantKey } from '../../lib/kancl-fb';
 
 export const config = {
   maxDuration: 60,
@@ -13,9 +13,9 @@ export default async function handler(req, res) {
   if (!kv) return res.status(500).json({ error: 'KV není nakonfigurované' });
 
   try {
-    const tk = todayKey();
+    const rk = relevantKey();
     const cached = await kv.get('kancl:week');
-    if (cached && cached.fromKey <= tk && tk <= cached.toKey) {
+    if (cached && cached.fromKey <= rk && rk <= cached.toKey) {
       return res.json({ ok: true, skipped: 'have-current-week', range: cached.range });
     }
 
