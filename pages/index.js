@@ -127,6 +127,9 @@ function RestaurantCard({ r, hadMenu, favorites, onToggleFav, onHide }) {
   const hasMenu = hasMenuData(r);
   // hadMenu = menu mělo položky, ale filtr alergenů je všechny skryl
   const allFilteredOut = !hasMenu && hadMenu;
+  // restaurace, která u žádné položky neuvádí alergeny (např. Kancl Bistro na menicka)
+  const items = hasMenu ? [...(r.menu.soups || []), ...(r.menu.meals || []), ...(r.menu.weekly || [])] : [];
+  const noAllergenInfo = items.length > 0 && items.every(i => !i.allergens);
 
   return (
     <div className={styles.restaurant} style={{ borderLeftColor: RESTAURANT_COLORS[r.id] || '#a8a29e' }}>
@@ -146,6 +149,7 @@ function RestaurantCard({ r, hadMenu, favorites, onToggleFav, onHide }) {
           <MenuGroup label={r.menu.soups && r.menu.soups.length === 1 ? "Polévka" : "Polévky"} items={r.menu.soups} favorites={favorites} onToggleFav={onToggleFav} />
           <MenuGroup label="Denní menu" items={r.menu.meals} favorites={favorites} onToggleFav={onToggleFav} />
           <MenuGroup label="Týdenní nabídka" items={r.menu.weekly} favorites={favorites} onToggleFav={onToggleFav} />
+          {noAllergenInfo && <div className={styles.noAllergenNote}>Restaurace neuvádí alergeny.</div>}
         </div>
       )}
     </div>

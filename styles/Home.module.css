@@ -320,6 +320,13 @@
   margin-left: auto;
 }
 
+.noAllergenNote {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #a8a29e;
+  font-style: italic;
+}
+
 /* Closed */
 .closedMessage {
   padding: 20px 26px 24px;
