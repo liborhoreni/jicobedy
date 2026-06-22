@@ -395,7 +395,7 @@ export default function Home() {
               ))}
             </div>
             <div className={styles.allergenNote}>
-              Alergeny přebíráme z menu restaurací (u některých čteme z fotky pomocí AI), mohou se vyskytnout chyby. Při alergii se vždy řiď údaji přímo v restauraci. Jídla bez uvedených alergenů se nefiltrují.
+              Alergeny si pro jistotu ověř přímo v restauraci.
             </div>
           </div>
         </div>

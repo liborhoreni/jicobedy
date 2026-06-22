@@ -104,8 +104,8 @@
 
 .novinkaBadge {
   position: absolute;
-  top: -10px;
-  right: -12px;
+  top: -16px;
+  right: -6px;
   background: linear-gradient(135deg, #7c3aed, #a855f7);
   color: #fff;
   font-size: 10px;
@@ -560,7 +560,7 @@
   .allergenBtn {
     position: relative;
     transform: none;
-    margin-top: 14px;
+    margin-top: 22px;
     font-size: 13px;
     padding: 6px 14px;
   }
