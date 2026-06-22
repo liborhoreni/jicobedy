@@ -156,6 +156,9 @@ function RestaurantCard({ r, hadMenu, favorites, onToggleFav, onHide }) {
   );
 }
 
+// "novinka" odznáček u filtru alergenů zmizí sám 10 dní po spuštění (spuštěno 22.6.2026)
+const NOVINKA_UNTIL = new Date('2026-07-02T23:59:59');
+
 const RANDOM_MESSAGES = [
   'Dneska zkus tohle!',
   'Na tohle máš chuť, věř mi.',
@@ -360,7 +363,7 @@ export default function Home() {
               className={`${styles.allergenBtn} ${excluded.length > 0 ? styles.allergenBtnActive : ''}`}
               onClick={() => setShowAllergenPanel(v => !v)}
             >
-              {excluded.length === 0 && <span className={styles.novinkaBadge}>✨ novinka</span>}
+              {excluded.length === 0 && now < NOVINKA_UNTIL && <span className={styles.novinkaBadge}>✨ novinka</span>}
               🚫&nbsp;&nbsp;Filtr alergenů{excluded.length > 0 ? ` (${excluded.length})` : ''}
             </button>
           )}
