@@ -360,6 +360,7 @@ export default function Home() {
               className={`${styles.allergenBtn} ${excluded.length > 0 ? styles.allergenBtnActive : ''}`}
               onClick={() => setShowAllergenPanel(v => !v)}
             >
+              {excluded.length === 0 && <span className={styles.novinkaBadge}>✨ novinka</span>}
               🚫&nbsp;&nbsp;Filtr alergenů{excluded.length > 0 ? ` (${excluded.length})` : ''}
             </button>
           )}

@@ -102,6 +102,27 @@
   background: #fef2f2;
 }
 
+.novinkaBadge {
+  position: absolute;
+  top: -10px;
+  right: -12px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.45);
+  pointer-events: none;
+  animation: novinkaPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes novinkaPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
 .allergenPanel {
   background: #ffffff;
   border-bottom: 1px solid #e7e5e4;
@@ -537,7 +558,7 @@
   }
 
   .allergenBtn {
-    position: static;
+    position: relative;
     transform: none;
     margin-top: 14px;
     font-size: 13px;
