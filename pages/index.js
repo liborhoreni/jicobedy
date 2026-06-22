@@ -198,6 +198,16 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
+  // Když se uživatel vrátí na stránku (návrat do otevřené záložky), sbal panel alergenů.
+  // Označené alergeny zůstávají (drží se v localStorage), jen se schová seznam.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') setShowAllergenPanel(false);
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
+
   // Auto-refresh every 10 min if some restaurants are missing menus.
   // /api/refresh má serverový zámek — scrape proběhne max. 1× za 10 min
   // bez ohledu na počet otevřených prohlížečů.
