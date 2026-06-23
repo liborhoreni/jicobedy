@@ -425,16 +425,16 @@ export default function Home() {
                 <button className={styles.allergenClear} onClick={clearAllergens}>Zrušit výběr</button>
               )}
             </div>
-            <label className={styles.veggieOption}>
-              <input
-                type="checkbox"
-                checked={veggieOnly}
-                onChange={toggleVeggieOnly}
-              />
-              <img className={styles.veggieOptionIcon} src="/vegetarian.png" alt="" />
-              <span>Jen vegetariánská jídla</span>
-            </label>
             <div className={styles.allergenGrid}>
+              <label className={styles.allergenOption}>
+                <input
+                  type="checkbox"
+                  checked={veggieOnly}
+                  onChange={toggleVeggieOnly}
+                />
+                <img className={styles.veggieOptionIcon} src="/vegetarian.png" alt="" />
+                <span>Jen vegetariánská jídla</span>
+              </label>
               {ALLERGENS.map(a => (
                 <label key={a.num} className={styles.allergenOption}>
                   <input
