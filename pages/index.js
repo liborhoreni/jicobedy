@@ -153,7 +153,7 @@ function RestaurantCard({ r, hadMenu, favorites, onToggleFav, onHide, hideMeat }
           {allFilteredOut
             ? (hideMeat
                 ? 'Žádné dnešní jídlo neodpovídá zvolenému filtru.'
-                : 'Všechna dnešní jídla obsahují alergeny, které jsi vyřadil.')
+                : 'Všechna dnešní jídla obsahují vyřazené alergeny.')
             : 'Restaurace zatím nezveřejnila menu. Jakmile jej zveřejní, zobrazí se zde.'}
         </div>
       ) : (
