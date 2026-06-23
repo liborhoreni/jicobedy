@@ -74,6 +74,16 @@ function saveExcludedAllergens(nums) {
   localStorage.setItem('excludedAllergens', JSON.stringify(nums));
 }
 
+function getVeggieOnly() {
+  try {
+    return localStorage.getItem('veggieOnly') === '1';
+  } catch { return false; }
+}
+
+function saveVeggieOnly(on) {
+  localStorage.setItem('veggieOnly', on ? '1' : '0');
+}
+
 // "1a, 3, 7" → [1, 3, 7]
 function parseAllergenNums(str) {
   if (!str) return [];
@@ -123,7 +133,7 @@ function MenuGroup({ label, items, favorites, onToggleFav }) {
   );
 }
 
-function RestaurantCard({ r, hadMenu, favorites, onToggleFav, onHide }) {
+function RestaurantCard({ r, hadMenu, favorites, onToggleFav, onHide, veggieOnly }) {
   const hasMenu = hasMenuData(r);
   // hadMenu = menu mělo položky, ale filtr alergenů je všechny skryl
   const allFilteredOut = !hasMenu && hadMenu;
@@ -141,7 +151,9 @@ function RestaurantCard({ r, hadMenu, favorites, onToggleFav, onHide }) {
       {!hasMenu ? (
         <div className={styles.closedMessage}>
           {allFilteredOut
-            ? 'Všechna dnešní jídla obsahují alergeny, které jsi vyřadil.'
+            ? (veggieOnly
+                ? 'Žádné dnešní jídlo neodpovídá zvolenému filtru.'
+                : 'Všechna dnešní jídla obsahují alergeny, které jsi vyřadil.')
             : 'Restaurace zatím nezveřejnila menu. Jakmile jej zveřejní, zobrazí se zde.'}
         </div>
       ) : (
@@ -175,6 +187,7 @@ export default function Home() {
   const [weather, setWeather] = useState(null);
   const [hidden, setHidden] = useState([]);
   const [excluded, setExcluded] = useState([]);
+  const [veggieOnly, setVeggieOnly] = useState(false);
   const [showAllergenPanel, setShowAllergenPanel] = useState(false);
   const now = new Date();
   const dayOfWeek = now.getDay();
@@ -185,6 +198,7 @@ export default function Home() {
     setFavorites(getFavorites());
     setHidden(getHiddenRestaurants());
     setExcluded(getExcludedAllergens());
+    setVeggieOnly(getVeggieOnly());
     fetch('/api/menus').then(r => r.json()).then(setData).catch(() => setLoadError(true));
     // Brno weather check
     fetch('https://api.open-meteo.com/v1/forecast?latitude=49.19&longitude=16.61&current=weather_code')
@@ -267,20 +281,31 @@ export default function Home() {
     });
   }, []);
 
+  const toggleVeggieOnly = useCallback(() => {
+    setVeggieOnly(prev => {
+      const next = !prev;
+      saveVeggieOnly(next);
+      return next;
+    });
+  }, []);
+
   const clearAllergens = useCallback(() => {
     setExcluded([]);
     saveExcludedAllergens([]);
+    setVeggieOnly(false);
+    saveVeggieOnly(false);
   }, []);
 
   // Filtr alergenů: jídlo skryjeme, jen pokud MÁ známé alergeny a některý z nich je vyřazený.
   // Jídla bez údaje o alergenech necháváme viditelná (neumíme potvrdit, že je neobsahují).
   const excludedSet = new Set(excluded);
   const itemVisible = useCallback((item) => {
+    if (veggieOnly && !item.veggie) return false;
     if (excludedSet.size === 0) return true;
     const nums = parseAllergenNums(item.allergens);
     if (nums.length === 0) return true;
     return !nums.some(n => excludedSet.has(n));
-  }, [excluded]);
+  }, [excluded, veggieOnly]);
 
   function filterMenu(menu) {
     if (!menu) return menu;
@@ -371,14 +396,14 @@ export default function Home() {
           <div className={styles.headerBtns}>
             {!isWeekend && (
               <button
-                className={`${styles.allergenBtn} ${excluded.length > 0 ? styles.allergenBtnActive : ''}`}
+                className={`${styles.allergenBtn} ${excluded.length > 0 || veggieOnly ? styles.allergenBtnActive : ''}`}
                 onClick={() => setShowAllergenPanel(v => {
                   const next = !v;
                   if (next) window.scrollTo({ top: 0, behavior: 'smooth' });
                   return next;
                 })}
               >
-                {excluded.length === 0 && now < NOVINKA_UNTIL && <span className={styles.novinkaBadge}>✨ novinka</span>}
+                {excluded.length === 0 && !veggieOnly && now < NOVINKA_UNTIL && <span className={styles.novinkaBadge}>✨ novinka</span>}
                 🚫&nbsp;&nbsp;Filtr alergenů{excluded.length > 0 ? ` (${excluded.length})` : ''}
               </button>
             )}
@@ -396,10 +421,19 @@ export default function Home() {
           <div className={styles.allergenPanelInner}>
             <div className={styles.allergenPanelHead}>
               <span className={styles.allergenPanelTitle}>Skrýt jídla obsahující alergen:</span>
-              {excluded.length > 0 && (
+              {(excluded.length > 0 || veggieOnly) && (
                 <button className={styles.allergenClear} onClick={clearAllergens}>Zrušit výběr</button>
               )}
             </div>
+            <label className={styles.veggieOption}>
+              <input
+                type="checkbox"
+                checked={veggieOnly}
+                onChange={toggleVeggieOnly}
+              />
+              <img className={styles.veggieOptionIcon} src="/vegetarian.png" alt="" />
+              <span>Jen vegetariánská jídla</span>
+            </label>
             <div className={styles.allergenGrid}>
               {ALLERGENS.map(a => (
                 <label key={a.num} className={styles.allergenOption}>
@@ -468,7 +502,7 @@ export default function Home() {
                   const bHas = hasMenuData(b);
                   if (aHas === bHas) return 0;
                   return aHas ? -1 : 1;
-                }).map(r => <RestaurantCard key={r.id} r={r} hadMenu={r.hadMenu} favorites={favorites} onToggleFav={toggleFav} onHide={toggleHide} />)}
+                }).map(r => <RestaurantCard key={r.id} r={r} hadMenu={r.hadMenu} favorites={favorites} onToggleFav={toggleFav} onHide={toggleHide} veggieOnly={veggieOnly} />)}
 
                 {hiddenRestaurants.length > 0 && (
                   <div className={styles.hiddenSection}>
