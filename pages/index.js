@@ -278,8 +278,19 @@ export default function Home() {
 
   const toggleAllergen = useCallback((num) => {
     setExcluded(prev => {
-      const next = prev.includes(num) ? prev.filter(n => n !== num) : [...prev, num];
+      const adding = !prev.includes(num);
+      const next = adding ? [...prev, num] : prev.filter(n => n !== num);
       saveExcludedAllergens(next);
+
+      // Neveřejné měření: počítáme jen zapnutí filtru
+      if (adding) {
+        fetch('/api/track-filter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'allergen', value: num }),
+        }).catch(() => {});
+      }
+
       return next;
     });
   }, []);
@@ -288,6 +299,15 @@ export default function Home() {
     setHideMeat(prev => {
       const next = !prev;
       saveHideMeat(next);
+
+      if (next) {
+        fetch('/api/track-filter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'meat' }),
+        }).catch(() => {});
+      }
+
       return next;
     });
   }, []);
