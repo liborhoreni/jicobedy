@@ -55,11 +55,11 @@ const ALLERGENS = [
   { num: 5, icon: '🥜', label: 'Arašídy' },
   { num: 6, icon: '🫛', label: 'Sója' },
   { num: 7, icon: '🥛', label: 'Mléko a laktóza' },
-  { num: 8, icon: '🌰', label: 'Skořápkové plody (ořechy)' },
+  { num: 8, icon: '🌰', label: 'Ořechy' },
   { num: 9, icon: '🥬', label: 'Celer' },
   { num: 10, icon: '🟡', label: 'Hořčice' },
   { num: 11, icon: '🌱', label: 'Sezam' },
-  { num: 12, icon: '🍷', label: 'Oxid siřičitý a siřičitany' },
+  { num: 12, icon: '🍷', label: 'Oxid siřičitý' },
   { num: 13, icon: '🫘', label: 'Vlčí bob (lupina)' },
   { num: 14, icon: '🦪', label: 'Měkkýši' },
 ];
@@ -199,7 +199,10 @@ export default function Home() {
     setHidden(getHiddenRestaurants());
     setExcluded(getExcludedAllergens());
     setHideMeat(getHideMeat());
-    fetch('/api/menus').then(r => r.json()).then(setData).catch(() => setLoadError(true));
+    fetch('/api/menus')
+      .then(r => { if (!r.ok) throw new Error('load failed'); return r.json(); })
+      .then(setData)
+      .catch(() => setLoadError(true));
     // Brno weather check
     fetch('https://api.open-meteo.com/v1/forecast?latitude=49.19&longitude=16.61&current=weather_code')
       .then(r => r.json())
@@ -234,7 +237,7 @@ export default function Home() {
       try {
         await fetch('/api/refresh');
         const res = await fetch('/api/menus');
-        setData(await res.json());
+        if (res.ok) setData(await res.json());
       } catch (e) { console.error(e); }
     }, 10 * 60 * 1000);
 
