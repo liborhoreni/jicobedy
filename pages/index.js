@@ -407,7 +407,7 @@ export default function Home() {
                 })}
               >
                 {excluded.length === 0 && !hideMeat && now < NOVINKA_UNTIL && <span className={styles.novinkaBadge}>✨ novinka</span>}
-                🚫&nbsp;&nbsp;Filtr – co nejím{excluded.length > 0 ? ` (${excluded.length})` : ''}
+                🚫&nbsp;&nbsp;Filtr – co nejím{(excluded.length + (hideMeat ? 1 : 0)) > 0 ? ` (${excluded.length + (hideMeat ? 1 : 0)})` : ''}
               </button>
             )}
             {!isWeekend && visibleRestaurants.length > 0 && (
