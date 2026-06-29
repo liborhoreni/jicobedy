@@ -150,11 +150,13 @@ function RestaurantCard({ r, hadMenu, favorites, onToggleFav, onHide, hideMeat }
 
       {!hasMenu ? (
         <div className={styles.closedMessage}>
-          {allFilteredOut
-            ? (hideMeat
-                ? 'Žádné dnešní jídlo neodpovídá zvolenému filtru.'
-                : 'Všechna dnešní jídla obsahují vyřazené alergeny.')
-            : 'Restaurace zatím nezveřejnila menu. Jakmile jej zveřejní, zobrazí se zde.'}
+          {r.notice
+            ? r.notice
+            : allFilteredOut
+              ? (hideMeat
+                  ? 'Žádné dnešní jídlo neodpovídá zvolenému filtru.'
+                  : 'Všechna dnešní jídla obsahují vyřazené alergeny.')
+              : 'Restaurace zatím nezveřejnila menu. Jakmile jej zveřejní, zobrazí se zde.'}
         </div>
       ) : (
         <div className={styles.menuSection}>

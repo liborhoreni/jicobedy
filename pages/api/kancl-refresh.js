@@ -15,9 +15,10 @@ export default async function handler(req, res) {
   try {
     const rk = relevantKey();
     const cached = await kv.get('kancl:week');
-    if (cached && cached.fromKey <= rk && rk <= cached.toKey) {
-      return res.json({ ok: true, skipped: 'have-current-week', range: cached.range });
-    }
+    const coversMenu = cached && cached.menu && cached.fromKey <= rk && rk <= cached.toKey;
+    const coversVacation = cached && cached.vacation && cached.vacation.fromKey <= rk && rk <= cached.vacation.toKey;
+    if (coversMenu) return res.json({ ok: true, skipped: 'have-current-week', range: cached.range });
+    if (coversVacation) return res.json({ ok: true, skipped: 'on-vacation', notice: cached.vacation.notice });
 
     const result = await fetchKanclWeekly();
     if (!result) {
@@ -25,6 +26,9 @@ export default async function handler(req, res) {
     }
 
     await kv.set('kancl:week', result);
+    if (result.vacation) {
+      return res.json({ ok: true, found: true, vacation: true, notice: result.vacation.notice });
+    }
     res.json({ ok: true, found: true, range: result.range, items: result.menu.soups.length + result.menu.meals.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
