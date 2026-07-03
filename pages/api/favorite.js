@@ -6,8 +6,14 @@ export default async function handler(req, res) {
   const kv = getRedis();
   if (!kv) return res.status(200).json({ ok: true });
 
-  const { meal, action } = req.body;
-  if (!meal || !action) return res.status(400).json({ error: 'missing meal or action' });
+  const { meal, action } = req.body || {};
+  // Validace: název jídla musí být rozumný string (ochrana proti zaplevelení KV).
+  if (typeof meal !== 'string' || !meal.trim() || meal.length > 200) {
+    return res.status(400).json({ error: 'invalid meal' });
+  }
+  if (action !== 'add' && action !== 'remove') {
+    return res.status(400).json({ error: 'invalid action' });
+  }
 
   try {
     if (action === 'add') {
@@ -15,6 +21,7 @@ export default async function handler(req, res) {
       await kv.incr('favorites:total');
     } else if (action === 'remove') {
       await kv.hincrby('favorites', meal, -1);
+      await kv.decr('favorites:total');
     }
 
     // Track unique users (approximate, by day)

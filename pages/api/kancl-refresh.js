@@ -9,6 +9,17 @@ export const config = {
 // Apify se volá JEN když nemáme menu pokrývající dnešek → fakticky ~1× týdně (skoro nula nákladů).
 // Spouští Mac mini cron před ranním /api/scrape; runScrape pak `kancl:week` mergne do id 8518.
 export default async function handler(req, res) {
+  // Ochrana proti zneužití: endpoint spouští placený Apify + Claude OCR.
+  // Volá ho Mac mini cron s ?key=CRON_SECRET (nebo Authorization: Bearer).
+  // Dokud CRON_SECRET není nastavené, chová se jako dřív (otevřené).
+  const secret = process.env.CRON_SECRET;
+  if (secret) {
+    const authorized =
+      req.headers.authorization === `Bearer ${secret}` ||
+      req.query.key === secret;
+    if (!authorized) return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   const kv = getRedis();
   if (!kv) return res.status(500).json({ error: 'KV není nakonfigurované' });
 
