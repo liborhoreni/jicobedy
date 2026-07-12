@@ -1,1 +1,28 @@
-{}
+{
+  "crons": [
+    {
+      "path": "/api/kancl-refresh",
+      "schedule": "55 4 * * 1-5"
+    },
+    {
+      "path": "/api/scrape",
+      "schedule": "0 5 * * 1-5"
+    },
+    {
+      "path": "/api/kancl-refresh",
+      "schedule": "40 8 * * 1-5"
+    },
+    {
+      "path": "/api/scrape",
+      "schedule": "45 8 * * 1-5"
+    },
+    {
+      "path": "/api/kancl-refresh",
+      "schedule": "0 9 * * 6,0"
+    },
+    {
+      "path": "/api/kancl-refresh",
+      "schedule": "0 17 * * 6,0"
+    }
+  ]
+}
