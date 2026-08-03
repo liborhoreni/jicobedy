@@ -1,6 +1,7 @@
 import { getRedis } from '../../lib/kv';
 import { runScrape } from '../../lib/scrape-runner';
-import { pragueNow } from '../../lib/date';
+import { hasMenuData } from '../../lib/menu';
+import { pragueNow, pragueDateString } from '../../lib/date';
 
 // Stejný důvod jako u /api/scrape — studený scrape se do 60 s nevejde.
 export const config = {
@@ -19,6 +20,18 @@ export default async function handler(req, res) {
   if (day === 0 || day === 6) {
     return res.json({ ok: true, skipped: 'weekend' });
   }
+
+  // Endpoint je veřejný a scrape stojí kredity (Claude, Apify). Když jsou data z dneška
+  // a všechny restaurace mají menu, není co doplňovat — nespouštěj nic.
+  try {
+    const current = await kv.get('menus');
+    const upToDate = current
+      && current.date === pragueDateString()
+      && Array.isArray(current.restaurants)
+      && current.restaurants.length > 0
+      && current.restaurants.every(r => hasMenuData(r) || r.notice);
+    if (upToDate) return res.json({ ok: true, skipped: 'up-to-date' });
+  } catch {}
 
   // Atomický zámek: NX = nastav jen pokud neexistuje, EX = expirace 10 min
   const lock = await kv.set('scrape:lock', '1', { nx: true, ex: 600 });

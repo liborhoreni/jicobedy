@@ -31,8 +31,11 @@ function normalize(name) {
   return stripNumber(name).toLowerCase().trim().replace(/\s+/g, ' ');
 }
 
+// toISOString() je UTC — mezi půlnocí a druhou ranní by oblíbená jídla přidaná
+// dnes vypadala jako včerejší. Bereme proto pražský den.
 function getToday() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function getFavorites() {

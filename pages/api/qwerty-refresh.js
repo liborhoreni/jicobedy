@@ -1,6 +1,6 @@
 import { getRedis } from '../../lib/kv';
 import { fetchQwertyMenu } from '../../lib/qwerty-fb';
-import { todayKey } from '../../lib/kancl-fb';
+import { todayKey, covers } from '../../lib/date';
 
 export const config = {
   maxDuration: 60,
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   try {
     const dk = todayKey();
     const cached = await kv.get('qwerty:week');
-    if (cached && cached.menu && cached.fromKey <= dk && dk <= cached.toKey) {
+    if (cached && cached.menu && covers(cached, dk)) {
       return res.json({ ok: true, skipped: 'have-week' });
     }
 

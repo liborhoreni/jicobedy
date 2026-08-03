@@ -1,4 +1,5 @@
 import { getRedis } from '../../lib/kv';
+import { pragueDayId } from '../../lib/date';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
@@ -20,14 +21,20 @@ export default async function handler(req, res) {
       await kv.hincrby('favorites', meal, 1);
       await kv.incr('favorites:total');
     } else if (action === 'remove') {
-      await kv.hincrby('favorites', meal, -1);
-      await kv.decr('favorites:total');
+      // Odebrání může počítadlo stlačit pod nulu (odebrání bez předchozího přidání,
+      // např. po vymazání localStorage) — dorovnáme zpátky na nulu, ať součty sedí.
+      const left = await kv.hincrby('favorites', meal, -1);
+      if (left < 0) await kv.hset('favorites', { [meal]: 0 });
+      const total = await kv.decr('favorites:total');
+      if (total < 0) await kv.set('favorites:total', 0);
     }
 
-    // Track unique users (approximate, by day)
-    const today = new Date().toISOString().slice(0, 10);
+    // Track unique users (approximate, by day). Denní sada se sama smaže po 40 dnech —
+    // bez expirace přibývá jeden klíč denně a nikdy nezmizí.
+    const today = pragueDayId();
     const userKey = req.headers['x-forwarded-for'] || 'unknown';
     await kv.sadd(`users:${today}`, userKey);
+    await kv.expire(`users:${today}`, 60 * 60 * 24 * 40);
 
     res.json({ ok: true });
   } catch (err) {

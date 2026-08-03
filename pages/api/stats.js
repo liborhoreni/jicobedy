@@ -1,4 +1,5 @@
 import { getRedis } from '../../lib/kv';
+import { pragueDayId } from '../../lib/date';
 
 const ALLERGEN_LABELS = {
   1: 'Lepek (obiloviny)', 2: 'Korýši', 3: 'Vejce', 4: 'Ryby', 5: 'Arašídy',
@@ -14,7 +15,7 @@ export default async function handler(req, res) {
     const favorites = await kv.hgetall('favorites') || {};
     const totalFavorites = (await kv.get('favorites:total')) || 0;
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = pragueDayId();
     const usersToday = await kv.scard(`users:${today}`) || 0;
 
     // Sort favorites by count descending
@@ -37,8 +38,13 @@ export default async function handler(req, res) {
 
     // Stav posledního scrapu — odliší rozbitý parser od zavřené restaurace
     const menus = await kv.get('menus');
+    const health = await kv.get('scrape:health');
     const scrape = {
       scrapedAt: menus?.scrapedAt || null,
+      // Data z jiného dne než dnešek = ranní sběr neproběhl nebo spadl
+      stale: !!(menus?.date && menus.date !== new Date().toLocaleDateString('cs-CZ', { timeZone: 'Europe/Prague' })),
+      ok: health?.ok ?? null,
+      problems: health?.problems || [],
       restaurants: (menus?.restaurants || []).map(r => ({
         name: r.name,
         closed: !!r.closed,
