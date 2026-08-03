@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import confetti from "canvas-confetti";
 import styles from "@/styles/Home.module.css";
 import { hasMenuData } from "@/lib/menu";
@@ -11,6 +11,17 @@ const RESTAURANT_COLORS = {
   'qwerty': '#f39c12',
   '3884': '#9b59b6',
 };
+
+// Data z KV nesou datum scrapu ("3. 8. 2026"). Když ranní scrape spadne, zůstane v KV
+// menu z minulého dne — a protože všechny restaurace menu "mají", auto-refresh se dřív
+// nechytl a lidem se ukazovalo staré menu pod dnešním datem.
+function isDataStale(dateStr) {
+  if (!dateStr) return true;
+  const data = String(dateStr).match(/\d+/g);
+  const today = new Date().toLocaleDateString('cs-CZ', { timeZone: 'Europe/Prague' }).match(/\d+/g);
+  if (!data || data.length < 3 || !today || today.length < 3) return true;
+  return data.slice(0, 3).some((n, i) => Number(n) !== Number(today[i]));
+}
 
 function stripNumber(name) {
   return name.replace(/^\d+\.\s*/, '');
@@ -188,6 +199,7 @@ export default function Home() {
   const [excluded, setExcluded] = useState([]);
   const [hideMeat, setHideMeat] = useState(false);
   const [showAllergenPanel, setShowAllergenPanel] = useState(false);
+  const staleRetried = useRef(false);
   const now = new Date();
   const dayOfWeek = now.getDay();
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
@@ -224,21 +236,31 @@ export default function Home() {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
-  // Auto-refresh every 10 min if some restaurants are missing menus.
-  // /api/refresh má serverový zámek — scrape proběhne max. 1× za 10 min
-  // bez ohledu na počet otevřených prohlížečů.
+  // Auto-refresh every 10 min if some restaurants are missing menus — nebo když jsou
+  // data z minulého dne (spadlý ranní scrape). /api/refresh má serverový zámek —
+  // scrape proběhne max. 1× za 10 min bez ohledu na počet otevřených prohlížečů.
   useEffect(() => {
     if (!data || !data.restaurants || isWeekend) return;
+    const stale = isDataStale(data.date);
     const allHaveMenu = data.restaurants.every(hasMenuData);
-    if (allHaveMenu) return;
+    if (allHaveMenu && !stale) return;
 
-    const interval = setInterval(async () => {
+    const refresh = async () => {
       try {
         await fetch('/api/refresh');
         const res = await fetch('/api/menus');
         if (res.ok) setData(await res.json());
       } catch (e) { console.error(e); }
-    }, 10 * 60 * 1000);
+    };
+
+    // Včerejší data doháníme hned, ne až za 10 minut. Ref hlídá, ať se to
+    // nezacyklí, když scrape neuspěje a datum zůstane staré.
+    if (stale && !staleRetried.current) {
+      staleRetried.current = true;
+      refresh();
+    }
+
+    const interval = setInterval(refresh, 10 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [data, isWeekend]);

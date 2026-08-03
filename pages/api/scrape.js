@@ -1,7 +1,9 @@
 import { runScrape } from '../../lib/scrape-runner';
 
+// V pondělí je scrape studený (týdenní cache prázdné → Apify + Claude na PDF/OCR)
+// a 60 s nestačilo — cron 3. 8. 2026 spadl na timeout a lidem zůstalo páteční menu.
 export const config = {
-  maxDuration: 60,
+  maxDuration: 300,
 };
 
 // Plný scrape — volá ho Vercel cron (Authorization: Bearer CRON_SECRET)

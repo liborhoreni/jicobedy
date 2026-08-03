@@ -2,8 +2,9 @@ import { getRedis } from '../../lib/kv';
 import { runScrape } from '../../lib/scrape-runner';
 import { pragueNow } from '../../lib/date';
 
+// Stejný důvod jako u /api/scrape — studený scrape se do 60 s nevejde.
 export const config = {
-  maxDuration: 60,
+  maxDuration: 300,
 };
 
 // Veřejný "doplň chybějící menu" endpoint pro frontend.
