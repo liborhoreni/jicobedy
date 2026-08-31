@@ -33,9 +33,11 @@ export default async function handler(req, res) {
       return res.json({ ok: true, skipped: 'have-week' });
     }
 
-    // Brzda na placené Apify: nejvýš 1 pokus za hodinu, ať externí cron (Mac mini)
-    // klidně tluče po 10 minutách — 31.8.2026 takhle proteklo 52 běhů (~$0,68) za den
-    // a od září je Apify na Free tarifu s $5 kredity/měsíc sdílenými s Pozitivními zprávami.
+    // Brzda na placené Apify: nejvýš 1 pokus za hodinu, ať endpoint volá cokoli.
+    // 31.8.2026 proteklo 52 běhů (~$0,68) za den — frontendový auto-refresh tehdy volal
+    // Apify přes runScrape (opraveno v commitu 5835769, Apify volají už jen crony po+út);
+    // tahle pojistka zůstává, protože Apify je od září na Free tarifu s $5 kredity/měsíc
+    // sdílenými s Pozitivními zprávami.
     const lastTry = await kv.get('qwerty:last-apify-try');
     if (lastTry && Date.now() - lastTry < 55 * 60 * 1000) {
       return res.json({ ok: true, skipped: 'apify-cooldown' });
