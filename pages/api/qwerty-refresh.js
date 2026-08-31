@@ -33,6 +33,15 @@ export default async function handler(req, res) {
       return res.json({ ok: true, skipped: 'have-week' });
     }
 
+    // Brzda na placené Apify: nejvýš 1 pokus za hodinu, ať externí cron (Mac mini)
+    // klidně tluče po 10 minutách — 31.8.2026 takhle proteklo 52 běhů (~$0,68) za den
+    // a od září je Apify na Free tarifu s $5 kredity/měsíc sdílenými s Pozitivními zprávami.
+    const lastTry = await kv.get('qwerty:last-apify-try');
+    if (lastTry && Date.now() - lastTry < 55 * 60 * 1000) {
+      return res.json({ ok: true, skipped: 'apify-cooldown' });
+    }
+    await kv.set('qwerty:last-apify-try', Date.now());
+
     const result = await fetchQwertyMenu();
     if (!result) {
       return res.json({ ok: true, found: false, note: 'Žádný FB příspěvek s dnešním menu' });
