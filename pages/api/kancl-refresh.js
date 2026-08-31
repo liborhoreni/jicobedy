@@ -7,8 +7,10 @@ export const config = {
 };
 
 // Stáhne týdenní menu KANCL Bistra z FB (přes Apify + Claude OCR) a uloží do KV `kancl:week`.
-// Apify se volá JEN když nemáme menu pokrývající dnešek → fakticky ~1× týdně (skoro nula nákladů).
-// Spouští Mac mini cron před ranním /api/scrape; runScrape pak `kancl:week` mergne do id 8518.
+// JEDINÉ místo, které volá Apify — Vercel cron ho spouští 3× v pondělí ráno a 2× v úterý
+// (viz vercel.json); díky cache-checku níž jde o max 5 placených volání týdně, typicky 1.
+// Když menu do úterý nechytíme, tento týden se prostě nezobrazí (runScrape už Apify nevolá).
+// runScrape pak `kancl:week` mergne do id 8518.
 export default async function handler(req, res) {
   // Ochrana proti zneužití: endpoint spouští placený Apify + Claude OCR.
   // Volá ho Mac mini cron s ?key=CRON_SECRET (nebo Authorization: Bearer).

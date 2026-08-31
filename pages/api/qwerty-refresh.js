@@ -7,8 +7,10 @@ export const config = {
 };
 
 // Stáhne týdenní menu QWERTY z FB (přes Apify + Claude OCR) a uloží do KV `qwerty:week`.
-// Apify se volá jen když cache nepokrývá dnešek → fakticky ~1× za týden.
-// Spouští Mac mini cron PŘED ranním /api/scrape; runScrape pak `qwerty:week` mergne do id 'qwerty'.
+// JEDINÉ místo, které volá Apify — Vercel cron ho spouští 3× v pondělí ráno a 2× v úterý
+// (viz vercel.json); díky cache-checku níž jde o max 5 placených volání týdně, typicky 1.
+// Když menu do úterý nechytíme, tento týden se prostě nezobrazí (runScrape už Apify nevolá).
+// runScrape pak `qwerty:week` mergne do id 'qwerty'.
 export default async function handler(req, res) {
   // Ochrana proti zneužití: endpoint spouští placený Apify + Claude OCR.
   // Chráněno stejně jako /api/scrape (?key=CRON_SECRET nebo Authorization: Bearer).
